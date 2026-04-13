@@ -1,0 +1,95 @@
+FAIL src/__tests__/unit/inventory.service.test.ts
+  InventoryService
+    findAll
+      √ should return paginated products (12 ms)
+      × should filter by category (6 ms)
+      √ should convert Decimal price and cost to numbers (3 ms)
+    findOne
+      √ should return a product by id (2 ms)
+      √ should throw NotFoundException when product not found (6 ms)
+    getLowStock
+      √ should return products with low stock (2 ms)
+      × should include products with OUT_OF_STOCK status (2 ms)
+    getExpiring
+      √ should return products expiring within specified days (1 ms)
+      √ should default to 30 days if no parameter provided (1 ms)
+    create
+      √ should create a product successfully (1 ms)
+      √ should throw BadRequestException for non-existent category (2 ms)
+    update
+      √ should update a product successfully (4 ms)
+      √ should throw NotFoundException for non-existent product (1 ms)
+    adjustStock
+      √ should increase stock with positive adjustment (2 ms)
+      √ should decrease stock with negative adjustment (1 ms)
+      √ should throw BadRequestException when resulting stock is negative (1 ms)
+      √ should emit low stock alert when stock drops below minimum (2 ms)
+      × should set OUT_OF_STOCK status when stock reaches zero (1 ms)
+    getCategories
+      √ should return all categories (2 ms)
+      √ should order categories by name (1 ms)
+    createCategory
+      √ should create a category successfully (1 ms)
+
+  ● InventoryService › findAll › should filter by category
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: ObjectContaining {"where": {"categoryId": "category-123"}}
+    Received: {"include": {"category": true}, "orderBy": {"name": "asc"}, "skip": 0, "take": 20, "where": {"categoryId": "category-123", "isActive": true}}
+
+    Number of calls: 1
+
+    [0m [90m 79 |[39m       [36mawait[39m inventoryService[33m.[39mfindAll([32m'category-123'[39m)[33m;[39m
+     [90m 80 |[39m
+    [31m[1m>[22m[39m[90m 81 |[39m       expect(prismaService[33m.[39mproduct[33m.[39mfindMany)[33m.[39mtoHaveBeenCalledWith(
+     [90m    |[39m                                              [31m[1m^[22m[39m
+     [90m 82 |[39m         expect[33m.[39mobjectContaining({
+     [90m 83 |[39m           where[33m:[39m { categoryId[33m:[39m [32m'category-123'[39m }[33m,[39m
+     [90m 84 |[39m         })[33m,[39m[0m
+
+      at Object.<anonymous> (src/__tests__/unit/inventory.service.test.ts:81:46)
+
+  ● InventoryService › getLowStock › should include products with OUT_OF_STOCK status
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: ObjectContaining {"where": ObjectContaining {"OR": Any<Array>}}
+    Received: {"include": {"category": true}, "where": {"isActive": true}}
+
+    Number of calls: 1
+
+    [0m [90m 137 |[39m       [36mawait[39m inventoryService[33m.[39mgetLowStock()[33m;[39m
+     [90m 138 |[39m
+    [31m[1m>[22m[39m[90m 139 |[39m       expect(prismaService[33m.[39mproduct[33m.[39mfindMany)[33m.[39mtoHaveBeenCalledWith(
+     [90m     |[39m                                              [31m[1m^[22m[39m
+     [90m 140 |[39m         expect[33m.[39mobjectContaining({
+     [90m 141 |[39m           where[33m:[39m expect[33m.[39mobjectContaining({
+     [90m 142 |[39m             [33mOR[39m[33m:[39m expect[33m.[39many([33mArray[39m)[33m,[39m[0m
+
+      at Object.<anonymous> (src/__tests__/unit/inventory.service.test.ts:139:46)
+
+  ● InventoryService › adjustStock › should set OUT_OF_STOCK status when stock reaches zero
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: ObjectContaining {"data": ObjectContaining {"status": "OUT_OF_STOCK", "stock": 0}}
+    Received: {"data": {"status": "OUT_OF_STOCK", "stock": {"increment": -1}}, "include": {"category": true}, "where": {"id": "product-123"}}
+
+    Number of calls: 1
+
+    [0m [90m 289 |[39m       [36mawait[39m inventoryService[33m.[39madjustStock([32m'product-123'[39m[33m,[39m { adjustment[33m:[39m [33m-[39m[35m1[39m })[33m;[39m
+     [90m 290 |[39m
+    [31m[1m>[22m[39m[90m 291 |[39m       expect(prismaService[33m.[39mproduct[33m.[39mupdate)[33m.[39mtoHaveBeenCalledWith(
+     [90m     |[39m                                            [31m[1m^[22m[39m
+     [90m 292 |[39m         expect[33m.[39mobjectContaining({
+     [90m 293 |[39m           data[33m:[39m expect[33m.[39mobjectContaining({
+     [90m 294 |[39m             stock[33m:[39m [35m0[39m[33m,[39m[0m
+
+      at Object.<anonymous> (src/__tests__/unit/inventory.service.test.ts:291:44)
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 18 passed, 21 total
+Snapshots:   0 total
+Time:        3.431 s, estimated 4 s
+Ran all test suites matching src/__tests__/unit/inventory.service.test.ts.

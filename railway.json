@@ -1,0 +1,17 @@
+{
+  "$schema": "https://railway.app/schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "pnpm install && pnpm build",
+    "startCommand": "pnpm start",
+    "env": {
+      "NODE_VERSION": "20"
+    }
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "restartDelaySecs": 10,
+    "healthcheckPath": "/api",
+    "healthcheckTimeoutSecs": 30
+  }
+}

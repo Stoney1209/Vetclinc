@@ -1,0 +1,409 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  VETERINARIAN
+  RECEPTIONIST
+  INVENTORY_MANAGER
+}
+
+enum AppointmentType {
+  URGENCY
+  CONSULTATION
+  SURGERY
+  VACCINATION
+  GROOMING
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum StockStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+  EXPIRED
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  role          Role      @default(RECEPTIONIST)
+  specialty     String?
+  licenseNumber String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  appointments    Appointment[]
+  medicalRecords MedicalRecord[]
+  sales          Sale[]
+  prescriptions  Prescription[]
+  refreshTokens  RefreshToken[]
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String?
+  phone     String
+  address   String?
+  rfc       String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pets  Pet[]
+  sales Sale[]
+
+  @@index([phone])
+  @@index([isActive])
+  @@index([firstName, lastName])
+  @@map("clients")
+}
+
+model Pet {
+  id         String    @id @default(uuid())
+  name       String
+  species    String
+  breed      String?
+  dateOfBirth DateTime?
+  gender     String?
+  color      String?
+  weight     Float?
+  microchip  String?
+  photoUrl   String?
+  notes      String?
+  isActive   Boolean   @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  clientId      String
+  client        Client         @relation(fields: [clientId], references: [id])
+  medicalRecords MedicalRecord[]
+  vaccinations   Vaccination[]
+  appointments  Appointment[]
+  weightHistory WeightHistory[]
+
+  @@index([clientId])
+  @@index([species])
+  @@index([isActive])
+  @@index([name])
+  @@map("pets")
+}
+
+model WeightHistory {
+  id         String   @id @default(uuid())
+  weight     Float
+  recordedAt DateTime @default(now())
+  notes      String?
+
+  petId String
+  pet   Pet   @relation(fields: [petId], references: [id])
+
+  @@index([petId])
+  @@map("weight_history")
+}
+
+model Vaccination {
+  id              String    @id @default(uuid())
+  vaccineName     String
+  batch           String?
+  applicationDate DateTime
+  nextDueDate     DateTime?
+  veterinarian    String?
+  notes           String?
+  documentUrl    String?
+
+  petId String
+  pet   Pet   @relation(fields: [petId], references: [id])
+
+  @@index([petId])
+  @@map("vaccinations")
+}
+
+model Room {
+  id       String   @id @default(uuid())
+  name     String
+  isActive Boolean  @default(true)
+
+  appointments Appointment[]
+
+  @@map("rooms")
+}
+
+model Appointment {
+  id        String            @id @default(uuid())
+  dateTime  DateTime
+  duration  Int
+  type      AppointmentType
+  status    AppointmentStatus @default(SCHEDULED)
+  notes     String?
+  colorCode String?
+
+  petId String
+  pet   Pet   @relation(fields: [petId], references: [id])
+
+  doctorId String
+  doctor   User   @relation(fields: [doctorId], references: [id])
+
+  roomId String?
+  room   Room?  @relation(fields: [roomId], references: [id])
+
+  medicalRecord MedicalRecord?
+
+  confirmedAt         DateTime?
+  confirmationChannel String?   // 'EMAIL' | 'SMS' | 'WHATSAPP'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([dateTime])
+  @@index([petId])
+  @@index([doctorId])
+  @@index([status])
+  @@index([roomId])
+  @@index([dateTime, doctorId])
+  @@index([dateTime, status])
+  @@index([doctorId, dateTime, status])
+  @@map("appointments")
+}
+
+model MedicalRecord {
+  id     String @id @default(uuid())
+
+  subjective String?  @db.Text
+  objective  String?  @db.Text
+  assessment String?  @db.Text
+  plan       String?  @db.Text
+
+  recordDate    DateTime @default(now())
+  diagnosis     String?
+  treatment     String?  @db.Text
+
+  followUpDate  DateTime?
+  followUpNotes String?   @db.Text
+  dischargedAt  DateTime?
+
+  appointmentId String?  @unique
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+
+  petId         String
+  pet           Pet     @relation(fields: [petId], references: [id])
+
+  veterinarianId String
+  veterinarian   User   @relation(fields: [veterinarianId], references: [id])
+
+  attachments   Attachment[]
+  prescriptions Prescription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([petId])
+  @@index([veterinarianId])
+  @@index([petId, recordDate])
+  @@index([followUpDate])
+  @@map("medical_records")
+}
+
+model Attachment {
+  id       String @id @default(uuid())
+  fileName String
+  fileUrl  String
+  fileType String
+  fileSize Int
+  uploadedAt DateTime @default(now())
+
+  medicalRecordId String
+  medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id])
+
+  @@map("attachments")
+}
+
+model NotificationLog {
+  id          String   @id @default(uuid())
+  type        String   // 'APPOINTMENT' | 'VACCINE'
+  channel     String   // 'EMAIL' | 'SMS' | 'WHATSAPP'
+  recipient   String
+  status      String   // 'SENT' | 'FAILED'
+  referenceId String?
+  error       String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([type])
+  @@index([status])
+  @@index([referenceId])
+  @@map("notification_logs")
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String
+  type String
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String     @id @default(uuid())
+  name        String
+  sku         String     @unique
+  description String?
+  price       Decimal    @db.Decimal(10, 2)
+  cost        Decimal?   @db.Decimal(10, 2)
+  stock       Int        @default(0)
+  minStock    Int        @default(5)
+  expiryDate  DateTime?
+  batch       String?
+  status      StockStatus @default(IN_STOCK)
+  imageUrl    String?
+  isActive    Boolean     @default(true)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  saleItems SaleItem[]
+  prescriptionItems PrescriptionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([expiryDate])
+  @@index([isActive])
+  @@index([name])
+  @@map("products")
+}
+
+model Sale {
+  id            String   @id @default(uuid())
+  subtotal      Decimal  @db.Decimal(10, 2)
+  tax           Decimal  @db.Decimal(10, 2)
+  total         Decimal  @db.Decimal(10, 2)
+  paymentMethod String?
+  status        String   @default("completed")
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
+  items SaleItem[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([clientId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([status])
+  @@index([createdAt, status])
+  @@index([clientId, status, createdAt])
+  @@map("sales")
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  subtotal  Decimal @db.Decimal(10, 2)
+
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_items")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model BlacklistedToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@map("blacklisted_tokens")
+}
+
+model Prescription {
+  id              String   @id @default(uuid())
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  medicalRecordId String
+  medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id])
+
+  veterinarianId  String
+  veterinarian    User @relation(fields: [veterinarianId], references: [id])
+
+  items PrescriptionItem[]
+
+  @@index([medicalRecordId])
+  @@index([veterinarianId])
+  @@map("prescriptions")
+}
+
+model PrescriptionItem {
+  id             String  @id @default(uuid())
+  productName    String
+  dosage         String
+  frequency      String
+  duration       String
+  quantity       Int
+  instructions   String?
+
+  prescriptionId String
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id])
+
+  productId      String?
+  product        Product?  @relation(fields: [productId], references: [id])
+
+  @@index([prescriptionId])
+  @@index([productId])
+  @@map("prescription_items")
+}

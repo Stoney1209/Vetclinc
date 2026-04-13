@@ -1,0 +1,16 @@
+﻿
+C:\Users\polli\Downloads\vetclinic\apps\api\src\__tests__\unit\appointments.service.test.ts
+  11:3   warning  'createMockRoom' is defined but never used             @typescript-eslint/no-unused-vars
+  40:13  warning  'mockAppointments' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\polli\Downloads\vetclinic\apps\api\src\__tests__\unit\auth.controller.test.ts
+  78:13  warning  'mockRequest' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\polli\Downloads\vetclinic\apps\api\src\__tests__\unit\auth.service.test.ts
+  2:52  warning  'BadRequestException' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\polli\Downloads\vetclinic\apps\api\src\__tests__\unit\users.service.test.ts
+  94:13  warning  'result' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+Ô£û 5 problems (0 errors, 5 warnings)
+

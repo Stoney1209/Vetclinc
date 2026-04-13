@@ -1,0 +1,51 @@
+[93m[4mUnused files[24m[39m (3)
+src/components/ui/avatar.tsx 
+src/components/ui/popover.tsx
+src/components/ui/tooltip.tsx
+[93m[4mUnused dependencies[24m[39m (3)
+@radix-ui/react-avatar   package.json:13:6
+@radix-ui/react-popover  package.json:15:6
+@radix-ui/react-tooltip  package.json:17:6
+[93m[4mUnused devDependencies[24m[39m (1)
+@testing-library/user-event  package.json:39:6
+[93m[4mUnused exports[24m[39m (33)
+SlideIn                  function  src/components/ui/page-transition.tsx:33:17
+StaggerChildren          function  src/components/ui/page-transition.tsx:64:17
+StaggerItem              function  src/components/ui/page-transition.tsx:88:17
+CardFooter                         src/components/ui/card.tsx:72:28           
+buttonVariants                     src/components/ui/button.tsx:53:18         
+default                  variable  src/lib/api.ts:136:16                      
+badgeVariants                      src/components/ui/badge.tsx:49:17          
+useAppointment           function  src/hooks/use-appointments.ts:26:17        
+useUpdateAppointment     function  src/hooks/use-appointments.ts:50:17        
+useClient                function  src/hooks/use-clients.ts:13:17             
+DialogPortal                       src/components/ui/dialog.tsx:88:3          
+DialogOverlay                      src/components/ui/dialog.tsx:89:3          
+DialogClose                        src/components/ui/dialog.tsx:90:3          
+SelectGroup                        src/components/ui/select.tsx:140:3         
+SelectLabel                        src/components/ui/select.tsx:144:3         
+SelectSeparator                    src/components/ui/select.tsx:146:3         
+SelectScrollUpButton               src/components/ui/select.tsx:147:3         
+SelectScrollDownButton             src/components/ui/select.tsx:148:3         
+SkeletonCard                       src/components/ui/skeleton.tsx:219:3       
+SkeletonTable                      src/components/ui/skeleton.tsx:220:3       
+SkeletonClientCard                 src/components/ui/skeleton.tsx:221:3       
+SkeletonAppointmentCard            src/components/ui/skeleton.tsx:222:3       
+SkeletonProductRow                 src/components/ui/skeleton.tsx:223:3       
+SkeletonStatsCard                  src/components/ui/skeleton.tsx:224:3       
+SkeletonForm                       src/components/ui/skeleton.tsx:226:3       
+useProduct               function  src/hooks/use-inventory.ts:33:17           
+TableFooter                        src/components/ui/table.tsx:88:41          
+TableCaption                       src/components/ui/table.tsx:88:86          
+useSale                  function  src/hooks/use-sales.ts:19:17               
+useMedicalRecords        function  src/hooks/use-medical-records.ts:5:17      
+useMedicalRecord         function  src/hooks/use-medical-records.ts:14:17     
+useUpdateMedicalRecord   function  src/hooks/use-medical-records.ts:37:17     
+useSocket                function  src/lib/socket.tsx:62:17                   
+[93m[4mUnused exported types[24m[39m (6)
+InputProps        interface  src/components/ui/input.tsx:4:18   
+LabelProps        interface  src/components/ui/label.tsx:4:18   
+ButtonProps       interface  src/components/ui/button.tsx:34:18 
+BadgeProps        interface  src/components/ui/badge.tsx:36:18  
+TextareaProps     interface  src/components/ui/textarea.tsx:4:18
+CreatePetPayload  interface  src/hooks/use-pets.ts:39:18        

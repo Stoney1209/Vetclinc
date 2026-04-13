@@ -1,0 +1,37 @@
+[93m[4mUnused files[24m[39m (13)
+coverage/block-navigation.js                            
+coverage/prettify.js                                    
+coverage/sorter.js                                      
+temp/seed.js                                            
+coverage/lcov-report/block-navigation.js                
+coverage/lcov-report/prettify.js                        
+coverage/lcov-report/sorter.js                          
+src/modules/auth/__tests__/auth.controller.spec.ts      
+src/modules/auth/__tests__/auth.service.spec.ts         
+src/modules/clients/__tests__/clients.controller.spec.ts
+src/modules/pets/__tests__/pets.controller.spec.ts      
+src/modules/pets/__tests__/pets.service.spec.ts         
+src/modules/sales/__tests__/sales.service.spec.ts       
+[93m[4mUnused dependencies[24m[39m (5)
+csurf           package.json:38:6
+file-type       package.json:39:6
+multer          package.json:41:6
+passport-local  package.json:44:6
+uuid            package.json:49:6
+[93m[4mUnused devDependencies[24m[39m (6)
+@types/multer          package.json:58:6
+@types/passport-local  package.json:61:6
+@types/supertest       package.json:63:6
+@types/uuid            package.json:64:6
+supertest              package.json:71:6
+tsconfig-paths         package.json:74:6
+[93m[4mUnlisted binaries[24m[39m (1)
+tsx  package.json
+[93m[4mUnused exports[24m[39m (4)
+resetPrismaMock                      src/__tests__/mocks/prisma.mock.ts:10:14     
+createMockRoom                       src/__tests__/mocks/prisma.mock.ts:127:14    
+OptionalDateStringConstraint  class  src/modules/common/dto/pagination.dto.ts:6:14
+SaleItemDto                   class  src/modules/sales/dto/sales.dto.ts:5:14      
+[93m[4mUnused exported types[24m[39m (2)
+PrismaMock       type       src/__tests__/mocks/prisma.mock.ts:4:13       
+PaginatedResult  interface  src/modules/common/dto/pagination.dto.ts:70:18

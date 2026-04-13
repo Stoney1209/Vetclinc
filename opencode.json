@@ -1,0 +1,84 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "db-expert": {
+      "description": "Experto en Prisma ORM y PostgreSQL para el proyecto VetClinic. Gestiona schemas, migrations, seeds, queries optimizadas y troubleshooting de base de datos.",
+      "mode": "subagent",
+      "temperature": 0.1,
+      "prompt": "{file:.opencode/agents/db-expert.md}",
+      "permission": {
+        "edit": "ask",
+        "bash": {
+          "*": "ask",
+          "npx prisma *": "allow",
+          "pnpm db:*": "allow"
+        },
+        "webfetch": "deny"
+      }
+    },
+    "api-tester": {
+      "description": "Genera y mantiene tests para la API NestJS de VetClinic. Crea unit tests, integration tests y API tests siguiendo las mejores prácticas.",
+      "mode": "subagent",
+      "temperature": 0.1,
+      "prompt": "{file:.opencode/agents/api-tester.md}",
+      "permission": {
+        "edit": "allow",
+        "bash": {
+          "*": "ask",
+          "pnpm test*": "allow",
+          "pnpm lint": "allow",
+          "npx jest *": "allow"
+        },
+        "webfetch": "deny"
+      }
+    },
+    "security-auditor": {
+      "description": "Realiza auditorías de seguridad en el código de VetClinic. Identifica vulnerabilidades en autenticación, validación, exposición de datos y configuración.",
+      "mode": "subagent",
+      "temperature": 0.1,
+      "prompt": "{file:.opencode/agents/security-auditor.md}",
+      "permission": {
+        "edit": "deny",
+        "bash": {
+          "*": "ask",
+          "grep *": "allow",
+          "rg *": "allow",
+          "git diff *": "allow",
+          "git log *": "allow"
+        },
+        "webfetch": "deny"
+      }
+    },
+    "docs-writer": {
+      "description": "Genera y mantiene documentación técnica para VetClinic Pro. Crea READMEs, guías de API, documentación de módulos y arquitectura.",
+      "mode": "subagent",
+      "temperature": 0.3,
+      "prompt": "{file:.opencode/agents/docs-writer.md}",
+      "permission": {
+        "edit": "allow",
+        "bash": {
+          "*": "deny",
+          "ls *": "allow",
+          "tree *": "allow"
+        },
+        "webfetch": "allow"
+      }
+    },
+    "frontend-ui": {
+      "description": "Experto en frontend para VetClinic Pro. Crea componentes UI con shadcn/ui, Tailwind CSS, y sigue las mejores prácticas de Next.js App Router.",
+      "mode": "subagent",
+      "temperature": 0.3,
+      "prompt": "{file:.opencode/agents/frontend-ui.md}",
+      "permission": {
+        "edit": "allow",
+        "bash": {
+          "*": "ask",
+          "pnpm lint": "allow",
+          "pnpm build": "allow",
+          "npx shadcn *": "allow"
+        },
+        "webfetch": "deny"
+      }
+    }
+  }
+}
