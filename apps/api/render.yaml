@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm install && npx prisma generate --schema=../../prisma/schema.prisma && pnpm build",
+  "outputDirectory": "dist",
+  "installCommand": "pnpm install"
+}
