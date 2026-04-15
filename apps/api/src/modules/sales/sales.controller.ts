@@ -56,13 +56,11 @@ export class SalesController {
   @ApiOperation({ summary: 'Generate PDF receipt for a sale' })
   async getReceipt(@Param('id') id: string, @Res() res: Response) {
     const sale = await this.salesService.findOne(id);
-    const doc = await this.pdfService.generateSaleReceipt(sale as any);
+    const buffer = await this.pdfService.generateSaleReceipt(sale as any);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=receipt-${id}.pdf`);
-    
-    doc.pipe(res);
-    doc.end();
+    res.send(buffer);
   }
 
   @Post()
