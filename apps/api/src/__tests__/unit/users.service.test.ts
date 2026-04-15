@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { UsersService } from '../../modules/users/users.service';
 import { PrismaService } from '../../database/prisma.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { createMockUser } from '../mocks/prisma.mock';
 
-jest.mock('bcrypt');
+jest.mock('bcryptjs');
 
 describe('UsersService', () => {
   let usersService: UsersService;

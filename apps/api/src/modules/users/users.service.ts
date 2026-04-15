@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateUserDto, UpdateUserDto } from './dto/users.dto';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { PaginationDto, paginate } from '../common/dto/pagination.dto';
 
 @Injectable()
