@@ -1,12 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../database/prisma.service';
+import { MailService } from './mail.service';
 
 @Injectable()
 export class RemindersService {
   private readonly logger = new Logger(RemindersService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_8AM)
   async handleDailyReminders() {
@@ -17,7 +21,6 @@ export class RemindersService {
     this.logger.log('Envío de recordatorios finalizado.');
   }
 
-  // Endopoint interno manual para forzar el trigger en development
   async triggerManualReminders() {
     return this.handleDailyReminders();
   }
@@ -58,19 +61,25 @@ export class RemindersService {
         if (!existingLog) {
           const email = appt.pet.client.email;
           if (email) {
-            // MOCK INTEGRATION: SendGrid / AWS SES
-            this.logger.log(`[EMAIL SENT] Recordatorio de cita a ${email} para la mascota ${appt.pet.name} pautada para el ${appt.dateTime.toISOString()}`);
-            
-            await this.prisma.notificationLog.create({
-              data: {
-                type: 'APPOINTMENT',
-                channel: 'EMAIL',
-                recipient: email,
-                status: 'SENT',
-                referenceId: appt.id,
-              },
-            });
-            count++;
+            const success = await this.mailService.sendAppointmentReminder(
+              email,
+              `${appt.pet.client.firstName} ${appt.pet.client.lastName}`,
+              appt.dateTime.toLocaleString(),
+              appt.pet.name
+            );
+
+            if (success) {
+              await this.prisma.notificationLog.create({
+                data: {
+                  type: 'APPOINTMENT',
+                  channel: 'EMAIL',
+                  recipient: email,
+                  status: 'SENT',
+                  referenceId: appt.id,
+                },
+              });
+              count++;
+            }
           }
         }
       }
@@ -115,19 +124,25 @@ export class RemindersService {
         if (!existingLog) {
           const email = vax.pet.client.email;
           if (email) {
-            // MOCK INTEGRATION: SendGrid / Twilio
-            this.logger.log(`[EMAIL SENT] Alerta de vacunación a ${email} para ${vax.pet.name} programada para el ${vax.nextDueDate}`);
-            
-            await this.prisma.notificationLog.create({
-              data: {
-                type: 'VACCINE',
-                channel: 'EMAIL',
-                recipient: email,
-                status: 'SENT',
-                referenceId: vax.id,
-              },
-            });
-            count++;
+            const success = await this.mailService.sendVaccineReminder(
+              email,
+              `${vax.pet.client.firstName} ${vax.pet.client.lastName}`,
+              vax.vaccineName,
+              vax.pet.name
+            );
+
+            if (success) {
+              await this.prisma.notificationLog.create({
+                data: {
+                  type: 'VACCINE',
+                  channel: 'EMAIL',
+                  recipient: email,
+                  status: 'SENT',
+                  referenceId: vax.id,
+                },
+              });
+              count++;
+            }
           }
         }
       }
@@ -174,7 +189,7 @@ export class RemindersService {
           const email = record.pet.client.email;
           if (email) {
             this.logger.log(
-              `[EMAIL SENT] Recordatorio de seguimiento a ${email} para ${record.pet.name} programado para el ${record.followUpDate?.toISOString()}`,
+              `[EMAIL LOG] Recordatorio de seguimiento a ${email} para ${record.pet.name}`,
             );
 
             await this.prisma.notificationLog.create({
