@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --parallel -r dev",
-    "build": "pnpm --parallel -r build",
+    "build": "cd apps/api && npx prisma generate --schema=../prisma/schema.prisma && pnpm build",
     "build:prod": "pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
     "lint": "pnpm --parallel -r lint",
     "db:migrate": "pnpm --filter @vetclinic/api db:migrate",
