@@ -7,6 +7,8 @@ import { createMockProduct, createMockSale } from '../mocks/prisma.mock';
 describe('SalesService', () => {
   let salesService: SalesService;
   let prismaService: any;
+  let pdfService: any;
+  let mailService: any;
 
   const mockProducts = [
     createMockProduct({
@@ -43,10 +45,20 @@ describe('SalesService', () => {
       $transaction: jest.fn(),
     };
 
+    pdfService = {
+      generateSaleReceipt: jest.fn().mockResolvedValue(Buffer.from('mock-pdf')),
+    };
+
+    mailService = {
+      sendSaleReceipt: jest.fn().mockResolvedValue(true),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SalesService,
         { provide: PrismaService, useValue: prismaService },
+        { provide: PdfService, useValue: pdfService },
+        { provide: MailService, useValue: mailService },
       ],
     }).compile();
 
