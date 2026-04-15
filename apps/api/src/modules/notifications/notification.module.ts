@@ -1,23 +1,13 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '../../database/prisma.module';
-import { NotificationGateway } from './notification.gateway';
+import { MailService } from './mail.service';
 import { RemindersService } from './reminders.service';
-import { NotificationService } from './notification.service';
+import { NotificationGateway } from './notification.gateway';
 
 @Module({
-  imports: [
-    PrismaModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-      }),
-      inject: [ConfigService],
-    }),
-  ],
-  providers: [NotificationGateway, RemindersService, NotificationService],
-  exports: [NotificationGateway, RemindersService, NotificationService],
+  imports: [PrismaModule, ConfigModule],
+  providers: [MailService, RemindersService, NotificationGateway],
+  exports: [MailService, RemindersService, NotificationGateway],
 })
 export class NotificationModule {}
