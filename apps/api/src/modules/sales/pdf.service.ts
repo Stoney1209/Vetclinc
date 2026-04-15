@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as PDFDocument from 'pdfkit';
+const PDFDocument = require('pdfkit');
 
 @Injectable()
 export class PdfService {
@@ -88,6 +88,10 @@ export class PdfService {
       doc
         .fontSize(14)
         .fillColor('#111827')
+        .text(`SUBTOTAL:`, 380, totalY - 40)
+        .text(`$${Number(sale.subtotal).toFixed(2)}`, 480, totalY - 40, { align: 'right', width: 70 })
+        .text(`IVA (16%):`, 380, totalY - 20)
+        .text(`$${Number(sale.tax).toFixed(2)}`, 480, totalY - 20, { align: 'right', width: 70 })
         .text(`TOTAL:`, 380, totalY)
         .text(`$${Number(sale.total).toFixed(2)}`, 480, totalY, { align: 'right', width: 70 });
 

@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { SalesService } from '../../modules/sales/sales.service';
 import { PrismaService } from '../../database/prisma.service';
+import { PdfService } from '../../modules/sales/pdf.service';
+import { MailService } from '../../modules/notifications/mail.service';
 import { createMockProduct, createMockSale } from '../mocks/prisma.mock';
 
 describe('SalesService', () => {

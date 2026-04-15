@@ -27,7 +27,7 @@ export class SalesService {
       if (!client) throw new NotFoundException('Cliente no encontrado');
 
       // 2. Procesar items y actualizar stock
-      let total = 0;
+      let subtotal = 0;
       const itemsData = [];
 
       for (const item of dto.items) {
@@ -38,13 +38,14 @@ export class SalesService {
         }
 
         const price = Number(product.price);
-        const subtotal = price * item.quantity;
-        total += subtotal;
+        const itemSubtotal = price * item.quantity;
+        subtotal += itemSubtotal;
 
         itemsData.push({
           productId: item.productId,
           quantity: item.quantity,
-          price: price,
+          unitPrice: price,
+          subtotal: itemSubtotal,
         });
 
         // Descontar stock
@@ -54,11 +55,16 @@ export class SalesService {
         });
       }
 
+      const tax = subtotal * 0.16;
+      const total = subtotal + tax;
+
       // 3. Crear la venta
       const sale = await tx.sale.create({
         data: {
           clientId: dto.clientId,
           userId: userId,
+          subtotal: subtotal,
+          tax: tax,
           total: total,
           paymentMethod: dto.paymentMethod,
           status: 'completed',
@@ -80,6 +86,28 @@ export class SalesService {
       );
 
       return sale;
+    });
+  }
+
+  async cancel(id: string) {
+    const sale = await this.findOne(id);
+    if (sale.status === 'cancelled') {
+      throw new BadRequestException('La venta ya está cancelada');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // Restaurar stock
+      for (const item of sale.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+
+      return tx.sale.update({
+        where: { id },
+        data: { status: 'cancelled' },
+      });
     });
   }
 
@@ -128,7 +156,12 @@ export class SalesService {
     ]);
 
     return paginate(
-      sales.map(s => ({ ...s, total: Number(s.total) })),
+      sales.map(s => ({ 
+        ...s, 
+        total: Number(s.total),
+        subtotal: Number(s.subtotal),
+        tax: Number(s.tax)
+      })),
       total,
       page,
       limit
@@ -149,8 +182,13 @@ export class SalesService {
     return {
       ...sale,
       total: Number(sale.total),
-      subtotal: Number((sale as any).subtotal || 0),
-      tax: Number((sale as any).tax || 0),
+      subtotal: Number(sale.subtotal),
+      tax: Number(sale.tax),
+      items: sale.items.map(item => ({
+        ...item,
+        unitPrice: Number(item.unitPrice),
+        subtotal: Number(item.subtotal),
+      }))
     };
   }
 
@@ -168,7 +206,7 @@ export class SalesService {
     const [aggregate, count, grouped, itemsCount] = await Promise.all([
       this.prisma.sale.aggregate({
         where,
-        _sum: { total: true },
+        _sum: { total: true, tax: true },
       }),
       this.prisma.sale.count({ where }),
       this.prisma.sale.groupBy({
@@ -182,14 +220,14 @@ export class SalesService {
     ]);
 
     const salesByPayment = grouped.reduce((acc, curr) => {
-      acc[curr.paymentMethod] = Number(curr._sum.total || 0);
+      acc[curr.paymentMethod || 'UNKNOWN'] = Number(curr._sum.total || 0);
       return acc;
     }, {} as Record<string, number>);
 
     return {
       salesCount: count,
       totalSales: Number(aggregate._sum.total || 0),
-      totalTax: Number(aggregate._sum.total || 0) * 0.16, // Simulado según lógica anterior
+      totalTax: Number(aggregate._sum.tax || 0),
       totalItems: itemsCount,
       salesByPayment,
     };
