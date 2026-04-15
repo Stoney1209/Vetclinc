@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm --parallel -r dev",
     "build": "pnpm --parallel -r build",
+    "build:prod": "pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
     "lint": "pnpm --parallel -r lint",
     "db:migrate": "pnpm --filter @vetclinic/api db:migrate",
     "db:generate": "pnpm --filter @vetclinic/api db:generate",
@@ -19,7 +20,7 @@
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0 <25.0.0"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
