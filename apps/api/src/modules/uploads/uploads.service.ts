@@ -59,7 +59,7 @@ export class UploadsService implements OnModuleInit {
     return { url };
   }
 
-  async uploadAttachment(file: Express.Multer.File, medicalRecordId: string) {
+  async uploadMedicalRecordFile(file: Express.Multer.File, medicalRecordId: string) {
     const url = await this.uploadToCloudinary(file, 'medical-records');
 
     const attachment = await this.prisma.attachment.create({
