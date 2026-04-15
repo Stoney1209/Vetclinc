@@ -11,8 +11,8 @@ dist/
 .next/
 out/
 
-# Uploads
-uploads/
+# Uploads (runtime files only, not source code)
+apps/api/uploads/
 
 # IDE
 .vscode/
