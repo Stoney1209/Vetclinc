@@ -2,7 +2,7 @@ import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, Res } from
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
 import { SalesService } from './sales.service';
-import { PdfReceiptService } from './pdf-receipt.service';
+import { PdfService } from './pdf.service';
 import { CreateSaleDto } from './dto/sales.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -18,7 +18,7 @@ import { Role } from '@prisma/client';
 export class SalesController {
   constructor(
     private salesService: SalesService,
-    private pdfReceiptService: PdfReceiptService,
+    private pdfService: PdfService,
   ) {}
 
   @Get()
@@ -55,7 +55,8 @@ export class SalesController {
   @Get(':id/receipt')
   @ApiOperation({ summary: 'Generate PDF receipt for a sale' })
   async getReceipt(@Param('id') id: string, @Res() res: Response) {
-    const doc = await this.pdfReceiptService.generateReceipt(id);
+    const sale = await this.salesService.findOne(id);
+    const doc = await this.pdfService.generateSaleReceipt(sale as any);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=receipt-${id}.pdf`);
