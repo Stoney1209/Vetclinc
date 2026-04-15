@@ -1,18 +1,34 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { join, resolve, extname } from 'path';
-import { createReadStream, existsSync, mkdirSync } from 'fs';
-import { StreamableFile } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import * as streamifier from 'streamifier';
 import { PrismaService } from '../../database/prisma.service';
-import { Response } from 'express';
-
-const uploadBasePath = join(process.cwd(), 'uploads');
 
 @Injectable()
 export class UploadsService {
-  constructor(private prisma: PrismaService) {
-    if (!existsSync(uploadBasePath)) {
-      mkdirSync(uploadBasePath, { recursive: true });
-    }
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {
+    cloudinary.config({
+      cloud_name: this.configService.get<string>('CLOUDINARY_CLOUD_NAME'),
+      api_key: this.configService.get<string>('CLOUDINARY_API_KEY'),
+      api_secret: this.configService.get<string>('CLOUDINARY_API_SECRET'),
+    });
+  }
+
+  async uploadToCloudinary(file: Express.Multer.File, folder: string): Promise<UploadApiResponse> {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: `vetclinic/${folder}`, resource_type: 'auto' },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result!);
+        },
+      );
+
+      streamifier.createReadStream(file.buffer).pipe(uploadStream);
+    });
   }
 
   async uploadMedicalRecordFile(file: Express.Multer.File | undefined, recordId: string) {
@@ -28,42 +44,45 @@ export class UploadsService {
       throw new BadRequestException('Expediente no encontrado');
     }
 
-    return this.prisma.attachment.create({
-      data: {
-        fileName: file.originalname,
-        fileUrl: `/api/uploads/medical-records/${file.filename}`,
-        fileType: file.mimetype,
-        fileSize: file.size,
-        medicalRecordId: recordId,
-      },
-    });
+    try {
+      const result = await this.uploadToCloudinary(file, 'medical-records');
+
+      return this.prisma.attachment.create({
+        data: {
+          fileName: file.originalname,
+          fileUrl: result.secure_url,
+          fileType: file.mimetype,
+          fileSize: file.size,
+          medicalRecordId: recordId,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException('Error al subir archivo a Cloudinary');
+    }
   }
 
-  getMedicalRecordFile(filename: string, res: Response) {
-    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-      throw new BadRequestException('Nombre de archivo inválido');
+  async uploadPetPhoto(file: Express.Multer.File | undefined, petId: string) {
+    if (!file) {
+      throw new BadRequestException('Foto requerida');
     }
 
-    const filePath = join(uploadBasePath, 'medical-records', filename);
-    const resolvedPath = resolve(filePath);
-
-    if (!resolvedPath.startsWith(resolve(uploadBasePath))) {
-      throw new BadRequestException('Ruta de archivo no permitida');
-    }
-
-    if (!existsSync(resolvedPath)) {
-      throw new BadRequestException('Archivo no encontrado');
-    }
-
-    const file = createReadStream(filePath);
-    const ext = extname(filename).toLowerCase();
-    const contentType = ext === '.pdf' ? 'application/pdf' : `image/${ext.slice(1)}`;
-
-    res.set({
-      'Content-Type': contentType,
-      'Content-Disposition': `inline; filename="${filename}"`,
+    const pet = await this.prisma.pet.findUnique({
+      where: { id: petId },
     });
 
-    return new StreamableFile(file);
+    if (!pet) {
+      throw new BadRequestException('Mascota no encontrada');
+    }
+
+    try {
+      const result = await this.uploadToCloudinary(file, 'pets');
+
+      return this.prisma.pet.update({
+        where: { id: petId },
+        data: { photoUrl: result.secure_url },
+      });
+    } catch (error) {
+      throw new BadRequestException('Error al subir foto a Cloudinary');
+    }
   }
 }

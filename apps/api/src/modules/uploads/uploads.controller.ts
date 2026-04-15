@@ -4,27 +4,21 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
-  BadRequestException,
   Param,
   Get,
   Res,
+  NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { memoryStorage } from 'multer';
+import { extname } from 'path';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { Response } from 'express';
-import { mkdirSync } from 'fs';
-import { v4 as uuidv4 } from 'uuid';
 import { UploadsService } from './uploads.service';
 
-const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf'];
+const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf'];
 const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-const maxFileSize = 5 * 1024 * 1024;
-const uploadBasePath = join(process.cwd(), 'uploads');
-
-mkdirSync(join(uploadBasePath, 'medical-records'), { recursive: true });
+const maxFileSize = 10 * 1024 * 1024; // 10MB para Cloudinary
 
 @ApiTags('Uploads')
 @ApiBearerAuth()
@@ -34,7 +28,7 @@ export class UploadsController {
   constructor(private uploadsService: UploadsService) {}
 
   @Post('medical-record/:recordId')
-  @ApiOperation({ summary: 'Upload attachment to medical record' })
+  @ApiOperation({ summary: 'Subir adjunto a expediente médico' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -49,22 +43,11 @@ export class UploadsController {
   })
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: join(uploadBasePath, 'medical-records'),
-        filename: (req, file, callback) => {
-          const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
-          callback(null, uniqueName);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (req, file, callback) => {
         const ext = extname(file.originalname).toLowerCase();
-        if (!imageExtensions.includes(ext)) {
-          callback(new BadRequestException('Tipo de archivo no permitido'), false);
-          return;
-        }
-        if (!allowedMimeTypes.includes(file.mimetype)) {
-          callback(new BadRequestException('Tipo MIME no permitido'), false);
-          return;
+        if (!allowedExtensions.includes(ext) || !allowedMimeTypes.includes(file.mimetype)) {
+          return callback(new Error('Tipo de archivo no permitido'), false);
         }
         callback(null, true);
       },
@@ -72,18 +55,43 @@ export class UploadsController {
     }),
   )
   async uploadMedicalRecordFile(
-    @UploadedFile() file: Express.Multer.File | undefined,
+    @UploadedFile() file: Express.Multer.File,
     @Param('recordId') recordId: string,
   ) {
     return this.uploadsService.uploadMedicalRecordFile(file, recordId);
   }
 
-  @Get('medical-records/:filename')
-  @ApiOperation({ summary: 'Get medical record attachment' })
-  async getMedicalRecordFile(
-    @Param('filename') filename: string,
-    @Res({ passthrough: true }) res: Response,
+  @Post('pet/:petId/photo')
+  @ApiOperation({ summary: 'Subir foto de mascota' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      fileFilter: (req, file, callback) => {
+        const ext = extname(file.originalname).toLowerCase();
+        if (!allowedExtensions.includes(ext) || !allowedMimeTypes.includes(file.mimetype)) {
+          return callback(new Error('Tipo de archivo no permitido'), false);
+        }
+        callback(null, true);
+      },
+      limits: { fileSize: maxFileSize },
+    }),
+  )
+  async uploadPetPhoto(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('petId') petId: string,
   ) {
-    return this.uploadsService.getMedicalRecordFile(filename, res);
+    return this.uploadsService.uploadPetPhoto(file, petId);
   }
 }
