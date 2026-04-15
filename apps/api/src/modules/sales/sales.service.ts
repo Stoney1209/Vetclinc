@@ -22,9 +22,11 @@ export class SalesService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      // 1. Validar cliente
-      const client = await tx.client.findUnique({ where: { id: dto.clientId } });
-      if (!client) throw new NotFoundException('Cliente no encontrado');
+      // 1. Validar cliente (Opcional)
+      if (dto.clientId) {
+        const client = await tx.client.findUnique({ where: { id: dto.clientId } });
+        if (!client) throw new NotFoundException('Cliente no encontrado');
+      }
 
       // 2. Procesar items y actualizar stock
       let subtotal = 0;
@@ -61,7 +63,7 @@ export class SalesService {
       // 3. Crear la venta
       const sale = await tx.sale.create({
         data: {
-          clientId: dto.clientId,
+          clientId: dto.clientId || null,
           userId: userId,
           subtotal: subtotal,
           tax: tax,
@@ -113,7 +115,7 @@ export class SalesService {
 
   private async generateAndSendReceipt(sale: any) {
     try {
-      if (!sale.client.email) return;
+      if (!sale.client || !sale.client.email) return;
 
       const pdfBuffer = await this.pdfService.generateSaleReceipt(sale);
       await this.mailService.sendSaleReceipt(
