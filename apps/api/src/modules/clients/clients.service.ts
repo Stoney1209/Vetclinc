@@ -44,6 +44,14 @@ export class ClientsService {
                 orderBy: { recordDate: 'desc' },
                 take: 1,
               },
+              vaccinations: {
+                orderBy: { applicationDate: 'desc' },
+                take: 5,
+              },
+              weightHistory: {
+                orderBy: { recordedAt: 'desc' },
+                take: 3,
+              },
             },
             orderBy: { createdAt: 'desc' },
           },

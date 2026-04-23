@@ -331,7 +331,7 @@ export default function MedicalRecordsPage() {
                               Vacunas ({pet.vaccinations.length})
                             </p>
                             <div className="flex flex-wrap gap-2">
-                              {pet.vaccinations.map((vac: any) => (
+                              {pet.vaccinations?.map((vac: any) => (
                                 <Badge key={vac.id} variant="vaccination" size="sm">
                                   {vac.vaccineName}
                                 </Badge>
@@ -347,7 +347,7 @@ export default function MedicalRecordsPage() {
                               Historial de peso
                             </p>
                             <div className="flex gap-4">
-                              {pet.weightHistory.map((wh: any) => (
+                              {pet.weightHistory?.map((wh: any) => (
                                 <div key={wh.id} className="text-center p-3 rounded-xl bg-muted/30">
                                   <p className="font-mono font-bold text-lg">{wh.weight}kg</p>
                                   <p className="text-xs text-muted-foreground">
