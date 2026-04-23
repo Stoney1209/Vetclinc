@@ -29,11 +29,16 @@ export class SalesService {
       }
 
       // 2. Procesar items y actualizar stock
+      const productIds = dto.items.map(item => item.productId);
+      const products = await tx.product.findMany({
+        where: { id: { in: productIds } },
+      });
+
       let subtotal = 0;
       const itemsData = [];
 
       for (const item of dto.items) {
-        const product = await tx.product.findUnique({ where: { id: item.productId } });
+        const product = products.find(p => p.id === item.productId);
         if (!product) throw new BadRequestException(`Producto ${item.productId} no encontrado`);
         if (product.stock < item.quantity) {
           throw new BadRequestException(`Stock insuficiente para ${product.name}`);

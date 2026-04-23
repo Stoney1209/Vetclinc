@@ -31,3 +31,34 @@ export class CreateSaleDto {
   @IsString()
   clientId?: string;
 }
+
+export class GetSalesDto {
+  @ApiPropertyOptional({ required: false })
+  @IsOptional()
+  @IsString()
+  startDate?: string;
+
+  @ApiPropertyOptional({ required: false })
+  @IsOptional()
+  @IsString()
+  endDate?: string;
+
+  @ApiPropertyOptional({ default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @ApiPropertyOptional({ default: 20 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number = 20;
+
+  @ApiPropertyOptional({ required: false })
+  @IsOptional()
+  @IsString()
+  search?: string;
+}

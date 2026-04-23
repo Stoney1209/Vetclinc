@@ -44,7 +44,7 @@ describe('SalesService', () => {
         findMany: jest.fn(),
         update: jest.fn(),
       },
-      $transaction: jest.fn(),
+      $transaction: jest.fn((callback) => callback(prismaService)),
     };
 
     pdfService = {
@@ -139,7 +139,10 @@ describe('SalesService', () => {
       expect(result.id).toBe('sale-123');
       expect(prismaService.sale.findUnique).toHaveBeenCalledWith({
         where: { id: 'sale-123' },
-        include: { items: { include: { product: true } } },
+        include: { 
+          client: true,
+          items: { include: { product: true } } 
+        },
       });
     });
 
@@ -181,9 +184,6 @@ describe('SalesService', () => {
 
     it('should create a sale successfully', async () => {
       prismaService.product.findMany.mockResolvedValue(mockProducts);
-      prismaService.$transaction.mockImplementation(async (callback: any) => {
-        return callback(prismaService);
-      });
       prismaService.sale.create.mockResolvedValue({
         id: 'new-sale',
         subtotal: 250,
@@ -226,12 +226,6 @@ describe('SalesService', () => {
         { ...mockProducts[0], price: 100, stock: 100 },
       ];
       prismaService.product.findMany.mockResolvedValue(singleProduct);
-      
-      let capturedData: any;
-      prismaService.$transaction.mockImplementation(async (callback: any) => {
-        capturedData = await callback(prismaService);
-        return capturedData.sale?.create?.({ data: { items: [], subtotal: 200, tax: 32, total: 232 } }) || { items: [], subtotal: 200, tax: 32, total: 232 };
-      });
       prismaService.sale.create.mockImplementation(({ data }: any) => ({
         id: 'new-sale',
         ...data,

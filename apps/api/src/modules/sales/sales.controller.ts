@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { Response } from 'express';
 import { SalesService } from './sales.service';
 import { PdfService } from './pdf.service';
-import { CreateSaleDto } from './dto/sales.dto';
+import { CreateSaleDto, GetSalesDto } from './dto/sales.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -23,19 +23,11 @@ export class SalesController {
 
   @Get()
   @ApiOperation({ summary: 'Get all sales (paginated)' })
-  @ApiQuery({ name: 'startDate', required: false })
-  @ApiQuery({ name: 'endDate', required: false })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  findAll(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-    @Query() pagination?: PaginationDto,
-  ) {
+  findAll(@Query() query: GetSalesDto) {
     return this.salesService.findAll(
-      startDate ? new Date(startDate) : undefined,
-      endDate ? new Date(endDate) : undefined,
-      pagination,
+      query.startDate ? new Date(query.startDate) : undefined,
+      query.endDate ? new Date(query.endDate) : undefined,
+      query,
     );
   }
 

@@ -70,8 +70,54 @@ export class UpdateAppointmentDto {
   @IsString()
   notes?: string;
 
+  @ApiPropertyOptional({ example: 'doctor-uuid-123' })
+  @IsOptional()
+  @IsString()
+  doctorId?: string;
+
   @ApiPropertyOptional({ example: 'room-uuid-123' })
   @IsOptional()
   @IsString()
   roomId?: string;
+}
+
+export class GetAppointmentsDto {
+  @ApiPropertyOptional({ required: false })
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @ApiPropertyOptional({ required: false })
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+
+  @ApiPropertyOptional({ required: false })
+  @IsOptional()
+  @IsString()
+  doctorId?: string;
+
+  @ApiPropertyOptional({ enum: AppointmentStatus, required: false })
+  @IsOptional()
+  @IsEnum(AppointmentStatus)
+  status?: AppointmentStatus;
+
+  @ApiPropertyOptional({ default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @ApiPropertyOptional({ default: 20 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number = 20;
+
+  @ApiPropertyOptional({ required: false })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

@@ -27,6 +27,7 @@ describe('AppointmentsService', () => {
     notificationServiceMock = {
       sendAppointmentConfirmation: jest.fn().mockResolvedValue(undefined),
     };
+    prismaMock.appointment.findMany.mockResolvedValue([]);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -206,6 +207,21 @@ describe('AppointmentsService', () => {
           data: expect.objectContaining({ colorCode: '#22c55e' }),
         }),
       );
+    });
+
+    it('should throw BadRequestException if there is a scheduling conflict', async () => {
+      const mockPet = createMockPet();
+      const mockDoctor = createMockUser({ role: 'VETERINARIAN' });
+      const conflictApp = createMockAppointment({
+        dateTime: new Date(createDto.dateTime),
+        duration: 30,
+      });
+
+      prismaMock.pet.findUnique.mockResolvedValue(mockPet);
+      prismaMock.user.findUnique.mockResolvedValue(mockDoctor);
+      prismaMock.appointment.findMany.mockResolvedValue([conflictApp]);
+
+      await expect(service.create(createDto)).rejects.toThrow(BadRequestException);
     });
   });
 

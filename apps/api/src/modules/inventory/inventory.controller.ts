@@ -91,4 +91,12 @@ export class InventoryController {
   delete(@Param('id') id: string) {
     return this.inventoryService.delete(id);
   }
+
+  @Delete('categories/:id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.INVENTORY_MANAGER)
+  @ApiOperation({ summary: 'Delete (soft) category' })
+  deleteCategory(@Param('id') id: string) {
+    return this.inventoryService.deleteCategory(id);
+  }
 }

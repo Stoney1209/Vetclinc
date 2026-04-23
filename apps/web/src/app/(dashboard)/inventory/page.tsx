@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { SkeletonProductTable } from '@/components/inventory/ProductSkeleton';
 
 const tabs = [
   { id: 'all', label: 'Todos', icon: Package, color: 'primary' },
@@ -386,7 +387,15 @@ export default function InventoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {displayProducts?.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell colSpan={7} className="p-0">
+                      <div className="p-4"><SkeletonProductTable rows={1} /></div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : displayProducts?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="p-0">
                     <EmptyState 

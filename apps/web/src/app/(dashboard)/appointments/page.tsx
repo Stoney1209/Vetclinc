@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { EmptyState } from '@/components/ui/empty-state';
+import { SkeletonAppointmentCard } from '@/components/appointments/AppointmentSkeleton';
 import dynamic from 'next/dynamic';
 
 const CalendarView = dynamic(
@@ -369,14 +370,7 @@ function AppointmentsContent() {
             {isLoading ? (
               <div className="p-8 space-y-4">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-[hsl(var(--surface-low))]">
-                    <div className="w-14 h-1.5 rounded-full bg-muted animate-pulse" />
-                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-muted animate-pulse" />
-                    <div className="space-y-2 flex-1">
-                      <div className="h-5 bg-muted rounded w-48 animate-pulse" />
-                      <div className="h-4 bg-muted rounded w-32 animate-pulse" />
-                    </div>
-                  </div>
+                  <SkeletonAppointmentCard key={i} />
                 ))}
               </div>
             ) : appointments.length === 0 ? (

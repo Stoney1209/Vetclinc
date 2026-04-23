@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { EmptyState } from '@/components/ui/empty-state';
-import { SkeletonListGrid } from '@/components/ui/skeleton';
+import { SkeletonClientList } from '@/components/clients/ClientSkeleton';
 import {
   Select,
   SelectContent,
@@ -254,7 +254,7 @@ export default function ClientsPage() {
 
       {/* Clients grid */}
       {isLoading ? (
-        <SkeletonListGrid items={6} />
+        <SkeletonClientList items={6} />
       ) : clients.length === 0 ? (
         search ? (
           <EmptyState 

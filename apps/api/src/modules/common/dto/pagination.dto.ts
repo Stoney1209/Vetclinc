@@ -45,26 +45,6 @@ export class PaginationDto {
   @IsOptional()
   @IsString()
   search?: string;
-
-  @ApiPropertyOptional({ required: false })
-  @IsOptional()
-  @IsOptionalDateString()
-  startDate?: string;
-
-  @ApiPropertyOptional({ required: false })
-  @IsOptional()
-  @IsOptionalDateString()
-  endDate?: string;
-
-  @ApiPropertyOptional({ required: false })
-  @IsOptional()
-  @IsString()
-  doctorId?: string;
-
-  @ApiPropertyOptional({ required: false })
-  @IsOptional()
-  @IsString()
-  status?: string;
 }
 
 export interface PaginatedResult<T> {

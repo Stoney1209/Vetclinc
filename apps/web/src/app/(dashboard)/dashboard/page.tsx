@@ -21,7 +21,7 @@ import { useUpcomingFollowUps } from '@/hooks/use-prescriptions';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { appointmentTypes } from '@/lib/appointment-types';
 import Link from 'next/link';
-import { SkeletonDashboard } from '@/components/ui/skeleton';
+import { SkeletonDashboard } from '@/components/dashboard/DashboardSkeleton';
 import { RevenueChart } from '@/components/dashboard/revenue-chart';
 import { AppointmentsDonut } from '@/components/dashboard/appointments-donut';
 

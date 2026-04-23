@@ -194,6 +194,7 @@ export class InventoryService {
 
   async getCategories() {
     return this.prisma.category.findMany({
+      where: { isActive: true },
       orderBy: { name: 'asc' },
     });
   }
@@ -211,6 +212,27 @@ export class InventoryService {
     }
 
     return this.prisma.product.update({
+      where: { id },
+      data: { isActive: false },
+    });
+  }
+
+  async deleteCategory(id: string) {
+    const category = await this.prisma.category.findUnique({ where: { id } });
+    if (!category || !category.isActive) {
+      throw new NotFoundException('Categoría no encontrada');
+    }
+
+    // Opcional: Verificar si hay productos activos en esta categoría
+    const productsCount = await this.prisma.product.count({
+      where: { categoryId: id, isActive: true },
+    });
+
+    if (productsCount > 0) {
+      throw new BadRequestException('No se puede eliminar una categoría con productos activos');
+    }
+
+    return this.prisma.category.update({
       where: { id },
       data: { isActive: false },
     });

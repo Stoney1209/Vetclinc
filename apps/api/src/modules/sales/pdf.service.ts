@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-const PDFDocument = require('pdfkit');
+import PDFDocument from 'pdfkit';
 
 @Injectable()
 export class PdfService {
@@ -70,8 +70,8 @@ export class PdfService {
           .fillColor('#333')
           .text(item.product?.name || 'Servicio/Otro', 60, currentY)
           .text(item.quantity.toString(), 300, currentY)
-          .text(`$${Number(item.price).toFixed(2)}`, 380, currentY)
-          .text(`$${(item.quantity * Number(item.price)).toFixed(2)}`, 480, currentY);
+          .text(`$${Number(item.unitPrice).toFixed(2)}`, 380, currentY)
+          .text(`$${(item.quantity * Number(item.unitPrice)).toFixed(2)}`, 480, currentY);
         
         currentY += 20;
       });

@@ -5,9 +5,6 @@ import {
   UseInterceptors,
   UploadedFile,
   Param,
-  Get,
-  Res,
-  NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';

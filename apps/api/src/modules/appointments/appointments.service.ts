@@ -166,6 +166,14 @@ export class AppointmentsService {
       }
     }
 
+    // Validar disponibilidad
+    await this.checkAvailability(
+      new Date(dto.dateTime),
+      dto.duration,
+      dto.doctorId,
+      dto.roomId,
+    );
+
     const appointment = await this.prisma.appointment.create({
       data: {
         ...dto,
@@ -191,7 +199,18 @@ export class AppointmentsService {
   }
 
   async update(id: string, dto: UpdateAppointmentDto) {
-    await this.findOne(id);
+    const current = await this.findOne(id);
+    
+    // Validar disponibilidad si cambia fecha, duración, doctor o sala
+    if (dto.dateTime || dto.duration || dto.doctorId || dto.roomId) {
+      await this.checkAvailability(
+        new Date(dto.dateTime || current.dateTime),
+        dto.duration || current.duration,
+        dto.doctorId || current.doctorId,
+        dto.roomId || current.roomId,
+        id,
+      );
+    }
 
     const appointment = await this.prisma.appointment.update({
       where: { id },
@@ -262,5 +281,56 @@ export class AppointmentsService {
       },
       orderBy: { dateTime: 'asc' },
     });
+  }
+
+  private async checkAvailability(
+    dateTime: Date,
+    duration: number,
+    doctorId: string,
+    roomId?: string,
+    excludeAppointmentId?: string,
+  ) {
+    const start = new Date(dateTime);
+    const end = new Date(start.getTime() + duration * 60000);
+
+    // Obtener citas del mismo día para doctor o sala
+    const dayStart = new Date(start);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(start);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    const existingAppointments = await this.prisma.appointment.findMany({
+      where: {
+        OR: [
+          { doctorId },
+          ...(roomId ? [{ roomId }] : []),
+        ],
+        dateTime: {
+          gte: dayStart,
+          lte: dayEnd,
+        },
+        status: { notIn: ['CANCELLED', 'NO_SHOW'] },
+        id: { not: excludeAppointmentId },
+      },
+    });
+
+    for (const app of existingAppointments) {
+      const appStart = new Date(app.dateTime);
+      const appEnd = new Date(appStart.getTime() + app.duration * 60000);
+
+      // Algoritmo de traslape: (StartA < EndB) && (EndA > StartB)
+      if (start < appEnd && end > appStart) {
+        if (app.doctorId === doctorId) {
+          throw new BadRequestException(
+            `El veterinario ya tiene una cita de ${appStart.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })} a ${appEnd.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`,
+          );
+        }
+        if (roomId && app.roomId === roomId) {
+          throw new BadRequestException(
+            `La sala ya está ocupada de ${appStart.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })} a ${appEnd.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`,
+          );
+        }
+      }
+    }
   }
 }

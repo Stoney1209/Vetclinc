@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AppointmentsService } from './appointments.service';
-import { CreateAppointmentDto, UpdateAppointmentDto } from './dto/appointments.dto';
+import { CreateAppointmentDto, UpdateAppointmentDto, GetAppointmentsDto } from './dto/appointments.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -22,15 +22,13 @@ export class AppointmentsController {
 
   @Get()
   @ApiOperation({ summary: 'Get all appointments with filters (paginated)' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  findAll(@Query() pagination: PaginationDto) {
+  findAll(@Query() query: GetAppointmentsDto) {
     return this.appointmentsService.findAll({
-      startDate: pagination.startDate ? new Date(pagination.startDate) : undefined,
-      endDate: pagination.endDate ? new Date(pagination.endDate) : undefined,
-      doctorId: pagination.doctorId,
-      status: pagination.status as AppointmentStatus,
-    }, pagination);
+      startDate: query.startDate ? new Date(query.startDate) : undefined,
+      endDate: query.endDate ? new Date(query.endDate) : undefined,
+      doctorId: query.doctorId,
+      status: query.status,
+    }, query);
   }
 
   @Get('calendar')
