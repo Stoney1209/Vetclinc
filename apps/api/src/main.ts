@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Triggering deploy with pnpm-workspace fix
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
