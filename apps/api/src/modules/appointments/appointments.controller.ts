@@ -6,8 +6,6 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
-import { AppointmentStatus } from '@prisma/client';
-import { PaginationDto } from '../common/dto/pagination.dto';
 import { NotificationService } from '../notifications/notification.service';
 
 @ApiTags('Appointments')

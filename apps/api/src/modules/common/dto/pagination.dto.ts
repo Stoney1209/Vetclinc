@@ -1,29 +1,6 @@
-import { IsOptional, IsInt, Min, Max, IsString, ValidatorConstraint, ValidatorConstraintInterface, registerDecorator, ValidationOptions } from 'class-validator';
+import { IsOptional, IsInt, Min, Max, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-
-@ValidatorConstraint({ name: 'optionalDateString', async: false })
-export class OptionalDateStringConstraint implements ValidatorConstraintInterface {
-  validate(value: any) {
-    if (!value || value === '') return true;
-    return !isNaN(Date.parse(value));
-  }
-  defaultMessage() {
-    return 'Must be a valid ISO 8601 date string';
-  }
-}
-
-function IsOptionalDateString(validationOptions?: ValidationOptions) {
-  return function (object: object, propertyName: string) {
-    registerDecorator({
-      target: object.constructor,
-      propertyName: propertyName,
-      options: validationOptions,
-      constraints: [],
-      validator: OptionalDateStringConstraint,
-    });
-  };
-}
 
 export class PaginationDto {
   @ApiPropertyOptional({ default: 1, minimum: 1 })
