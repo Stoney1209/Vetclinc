@@ -30,11 +30,11 @@ export function RecordDetailDialog({
   open,
   onOpenChange,
 }: RecordDetailDialogProps) {
-  const { data: records, isLoading } = useMedicalRecords(petId);
-  const recordsList = useMemo(() => records || [], [records]);
+  const { data: recordsResponse, isLoading } = useMedicalRecords(petId);
+  const recordsList = useMemo(() => (recordsResponse as any)?.data || [], [recordsResponse]);
   const firstRecordId = recordsList.length > 0 ? recordsList[0].id : '';
   const { data: prescriptionsResponse } = usePrescriptions(firstRecordId);
-  const prescriptions = useMemo(() => prescriptionsResponse || [], [prescriptionsResponse]);
+  const prescriptions = useMemo(() => (Array.isArray(prescriptionsResponse) ? prescriptionsResponse : (prescriptionsResponse as any)?.data || []), [prescriptionsResponse]);
 
   const handlePrint = useCallback(() => {
     const recordsHtml = recordsList.map((record: any, index: number) => `
@@ -110,7 +110,7 @@ export function RecordDetailDialog({
     setTimeout(() => {
       printWindow.print();
     }, 250);
-  }, [petName, petSpecies, petBreed, clientName, records, prescriptions]);
+  }, [petName, petSpecies, petBreed, clientName, recordsResponse, prescriptions]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
