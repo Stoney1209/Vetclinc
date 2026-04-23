@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProducts, useLowStock, useExpiringProducts, useCategories, useAdjustStock, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/use-inventory';
 import { Package, AlertTriangle, Clock, Plus, Minus, TrendingDown, TrendingUp, Pencil, Trash2, X } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency, formatDate, formatPlainDate } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Pagination } from '@/components/ui/pagination';
@@ -423,7 +423,7 @@ export default function InventoryPage() {
                     <TableCell className="hidden lg:table-cell">
                       {product.expiryDate ? (
                         <span className={new Date(product.expiryDate) < new Date() ? 'text-destructive font-medium' : 'text-muted-foreground text-sm'}>
-                          {formatDate(product.expiryDate)}
+                          {formatPlainDate(product.expiryDate)}
                         </span>
                       ) : (
                         <span className="text-muted-foreground text-sm">-</span>

@@ -13,6 +13,20 @@ export function formatDate(date: Date | string): string {
   });
 }
 
+/**
+ * Formatea una fecha ignorando el desfase horario (ideal para caducidad, cumpleaños, etc.)
+ */
+export function formatPlainDate(date: Date | string): string {
+  if (!date) return '-';
+  const d = new Date(date);
+  return d.toLocaleDateString('es-MX', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
 export function formatDateTime(date: Date | string): string {
   return new Date(date).toLocaleString('es-MX', {
     year: 'numeric',
