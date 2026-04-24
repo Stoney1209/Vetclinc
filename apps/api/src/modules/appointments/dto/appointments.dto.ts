@@ -1,7 +1,7 @@
 import { IsString, IsOptional, IsEnum, IsDateString, IsInt, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { AppointmentType, AppointmentStatus } from '@prisma/client';
+import { AppointmentType, AppointmentStatus } from '@vetclinic/prisma-client';
 
 export class CreateAppointmentDto {
   @ApiProperty({ example: '2024-01-15T10:00:00Z' })

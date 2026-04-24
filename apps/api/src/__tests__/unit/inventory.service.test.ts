@@ -317,6 +317,7 @@ describe('InventoryService', () => {
       await inventoryService.getCategories();
 
       expect(prismaService.category.findMany).toHaveBeenCalledWith({
+        where: { isActive: true },
         orderBy: { name: 'asc' },
       });
     });

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreatePetDto, UpdatePetDto, AddWeightDto, AddVaccinationDto, FilterPetsDto } from './dto/pets.dto';
 import { PaginationDto, paginate } from '../common/dto/pagination.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@vetclinic/prisma-client';
 
 @Injectable()
 export class PetsService {

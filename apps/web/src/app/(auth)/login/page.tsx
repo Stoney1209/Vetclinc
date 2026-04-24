@@ -58,7 +58,7 @@ function LoginForm() {
 
     try {
       const response = await authApi.login(email, password);
-      login(response.data.accessToken, response.data.user);
+      login(response.data.accessToken, response.data.refreshToken, response.data.user);
       toast.success('¡Bienvenido de vuelta!', {
         description: 'Redirigiendo al dashboard...',
       });

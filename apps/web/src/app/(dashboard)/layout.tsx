@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   Calendar,
@@ -16,7 +16,7 @@ import {
   PawPrint,
   Activity,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { PageTransition } from '@/components/ui/page-transition';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
@@ -32,8 +32,19 @@ const navigation = [
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  if (isLoading || !isAuthenticated) {
+    return null;
+  }
 
   const initials = user
     ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()

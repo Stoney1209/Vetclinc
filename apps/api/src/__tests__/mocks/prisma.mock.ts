@@ -1,10 +1,10 @@
-import { PrismaClient, Role, AppointmentType, AppointmentStatus } from '@prisma/client';
+import { Role, AppointmentType, AppointmentStatus } from '@vetclinic/prisma-client';
 import { DeepMockProxy, mockDeep, mockReset } from 'jest-mock-extended';
 
-export type PrismaMock = DeepMockProxy<PrismaClient>;
+export type PrismaMock = DeepMockProxy<any>;
 
 export const createPrismaMock = (): PrismaMock => {
-  return mockDeep<PrismaClient>();
+  return mockDeep<any>() as PrismaMock;
 };
 
 export const resetPrismaMock = (prismaMock: PrismaMock): void => {

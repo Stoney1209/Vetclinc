@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from '@prisma/client';
+import { Role } from '@vetclinic/prisma-client';
 
 export const ROLES_KEY = 'roles';
 

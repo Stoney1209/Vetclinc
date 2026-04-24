@@ -1,6 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@vetclinic/prisma-client';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {

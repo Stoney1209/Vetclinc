@@ -3,8 +3,8 @@ import { PrismaService } from '../../database/prisma.service';
 import { CreateSaleDto } from './dto/sales.dto';
 import { PdfService } from './pdf.service';
 import { MailService } from '../notifications/mail.service';
+import { Prisma } from '@vetclinic/prisma-client';
 import { PaginationDto, paginate } from '../common/dto/pagination.dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SalesService {

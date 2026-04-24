@@ -5,7 +5,7 @@ import { CreateProductDto, UpdateProductDto, AdjustStockDto, CreateCategoryDto }
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '@prisma/client';
+import { Role } from '@vetclinic/prisma-client';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Inventory')

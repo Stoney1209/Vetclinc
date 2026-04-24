@@ -142,7 +142,13 @@ export class AuthService {
     return user;
   }
 
-  async logout(userId: string, refreshToken?: string) {
+  async logout(userId: string, accessToken?: string, refreshToken?: string) {
+    if (accessToken) {
+      await this.prisma.blacklistedToken.create({
+        data: { token: accessToken },
+      }).catch(() => undefined);
+    }
+
     if (refreshToken) {
       await this.prisma.refreshToken.deleteMany({
         where: { token: refreshToken },

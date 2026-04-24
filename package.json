@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --parallel -r dev",
-    "build": "cd apps/api && pnpm db:generate && pnpm build",
-    "build:prod": "pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
+    "build": "pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
+    "build:prod": "pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
     "lint": "pnpm --parallel -r lint",
     "db:migrate": "pnpm --filter @vetclinic/api db:migrate",
     "db:generate": "pnpm --filter @vetclinic/api db:generate",

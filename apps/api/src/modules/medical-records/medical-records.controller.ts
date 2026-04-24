@@ -5,7 +5,7 @@ import { CreateMedicalRecordDto, UpdateMedicalRecordDto, ScheduleFollowUpDto } f
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '@prisma/client';
+import { Role } from '@vetclinic/prisma-client';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
 

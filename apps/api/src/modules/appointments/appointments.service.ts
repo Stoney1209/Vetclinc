@@ -3,9 +3,8 @@ import { PrismaService } from '../../database/prisma.service';
 import { NotificationGateway } from '../notifications/notification.gateway';
 import { NotificationService } from '../notifications/notification.service';
 import { CreateAppointmentDto, UpdateAppointmentDto } from './dto/appointments.dto';
-import { AppointmentType, AppointmentStatus } from '@prisma/client';
+import { AppointmentType, AppointmentStatus, Prisma } from '@vetclinic/prisma-client';
 import { PaginationDto, paginate } from '../common/dto/pagination.dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AppointmentsService {

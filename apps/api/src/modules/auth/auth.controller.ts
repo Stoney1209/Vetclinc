@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -7,7 +7,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Role } from '@prisma/client';
+import { Role } from '@vetclinic/prisma-client';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -41,8 +41,17 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout (invalidate token)' })
-  logout(@CurrentUser('sub') userId: string, @Body('refreshToken') refreshToken?: string) {
-    return this.authService.logout(userId, refreshToken);
+  logout(
+    @CurrentUser('sub') userId: string,
+    @Req() req: any,
+    @Body('refreshToken') refreshToken?: string,
+  ) {
+    const authorizationHeader = req.headers.authorization as string | undefined;
+    const accessToken = authorizationHeader?.startsWith('Bearer ')
+      ? authorizationHeader.slice(7)
+      : undefined;
+
+    return this.authService.logout(userId, accessToken, refreshToken);
   }
 
   @Get('profile')
