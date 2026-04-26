@@ -88,7 +88,6 @@ export function CalendarView({ className }: CalendarViewProps) {
   }, [currentDate, currentView]);
 
   const { data: appointmentsData, isLoading } = useCalendar(dateRange.startDate, dateRange.endDate);
-  const appointments = Array.isArray(appointmentsData) ? appointmentsData : [];
   const { data: clientsData } = useClients();
   const clients = Array.isArray(clientsData?.data) ? clientsData.data : [];
   const { data: veterinarians } = useVeterinarians();
@@ -97,6 +96,7 @@ export function CalendarView({ className }: CalendarViewProps) {
   const deleteMutation = useDeleteAppointment();
 
   const events: CalendarEvent[] = useMemo(() => {
+    const appointments = Array.isArray(appointmentsData) ? appointmentsData : [];
     return appointments.map((apt: any) => {
       const typeInfo = appointmentTypes.find((t) => t.value === apt.type);
       const start = new Date(apt.dateTime);
@@ -109,7 +109,7 @@ export function CalendarView({ className }: CalendarViewProps) {
         resource: apt,
       };
     });
-  }, [appointments]);
+  }, [appointmentsData]);
 
   const eventStyleGetter = useCallback((event: CalendarEvent) => {
     const apt = event.resource;

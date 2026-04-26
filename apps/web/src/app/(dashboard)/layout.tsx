@@ -19,7 +19,7 @@ import {
 import { useEffect, useState } from 'react';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { PageTransition } from '@/components/ui/page-transition';
-import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/auth-context';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -268,9 +268,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <AuthProvider>
-      <DashboardContent>{children}</DashboardContent>
-    </AuthProvider>
-  );
+  return <DashboardContent>{children}</DashboardContent>;
 }

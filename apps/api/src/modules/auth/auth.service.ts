@@ -89,7 +89,11 @@ export class AuthService {
     };
   }
 
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken?: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Token de refresco requerido');
+    }
+
     const stored = await this.prisma.refreshToken.findUnique({
       where: { token: refreshToken },
     });

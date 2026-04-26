@@ -110,7 +110,7 @@ export function RecordDetailDialog({
     setTimeout(() => {
       printWindow.print();
     }, 250);
-  }, [petName, petSpecies, petBreed, clientName, recordsResponse, prescriptions]);
+  }, [petName, petSpecies, petBreed, clientName, recordsList, prescriptions]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

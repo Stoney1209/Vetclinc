@@ -20,6 +20,12 @@ Sistema de gestión integral para clínicas veterinarias (B2B SaaS). Gestión de
 | **Zod** | ^3.22 | Validación de formularios |
 | **pnpm** | 9.0.0 | Gestor de paquetes |
 
+## Producción Actual
+
+- **Frontend:** Vercel
+- **Backend:** Render
+- **Base de datos:** Neon PostgreSQL
+
 ## Arquitectura
 
 ```mermaid
@@ -167,6 +173,7 @@ pnpm dev
 | `pnpm build` | Compila el proyecto |
 | `pnpm start` | Inicio en producción |
 | `pnpm lint` | ESLint |
+| `pnpm test:ci` | Tests backend en modo CI (sin bloqueo por coverage global) |
 
 ### Frontend (`apps/web/`)
 
@@ -225,6 +232,19 @@ NEXT_PUBLIC_API_URL=http://localhost:4000/api
 | `RECEPTIONIST` | Clientes, citas, ventas |
 | `INVENTORY_MANAGER` | Inventario, productos, stock |
 
+## 📚 Documentación Completa
+
+Para una guía detallada sobre cada parte del sistema, consulta nuestro **[Centro de Documentación](./docs/INDEX.md)**:
+
+- [🏗️ Arquitectura](./docs/architecture.md)
+- [📊 Base de Datos](./docs/database.md)
+- [🌐 Referencia de API](./docs/API.md)
+- [🎨 Frontend & UI](./docs/frontend.md)
+- [🚀 Despliegue](./docs/deployment.md)
+- [🧪 Testing](./docs/testing.md)
+
+---
+
 ## Estructura del Proyecto
 
 ```
@@ -257,8 +277,15 @@ vetclinic/
 ├── prisma/
 │   ├── schema.prisma           # Schema de base de datos
 │   └── seed.ts                 # Datos de prueba
-├── docs/
-│   └── API.md                  # Referencia completa del API
+├── docs/                       # 📚 DOCUMENTACIÓN TÉCNICA
+│   ├── INDEX.md                # Índice principal
+│   ├── API.md                  # Referencia del API
+│   ├── architecture.md         # Arquitectura del sistema
+│   ├── database.md             # Documentación de DB
+│   ├── deployment.md           # Guía de despliegue
+│   ├── design.md               # Sistema de diseño
+│   ├── frontend.md             # Guía del frontend
+│   └── testing.md              # Estrategia de pruebas
 └── package.json                # Configuración del monorepo
 ```
 

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { setRedirectHandler } from '@/lib/api';
 import { Toaster } from 'sonner';
 import { SocketProvider } from '@/lib/socket';
+import { AuthProvider } from '@/lib/auth-context';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -31,10 +32,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SocketProvider>
-        {children}
-        <Toaster position="top-right" richColors />
-      </SocketProvider>
+      <AuthProvider>
+        <SocketProvider>
+          {children}
+          <Toaster position="top-right" richColors />
+        </SocketProvider>
+      </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

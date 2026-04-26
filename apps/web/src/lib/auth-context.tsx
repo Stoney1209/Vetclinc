@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { authApi } from '@/lib/api';
+import { authApi, setAccessToken } from '@/lib/api';
 
 interface User {
   id: string;
@@ -15,9 +15,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  refreshToken: string | null;
   isLoading: boolean;
-  login: (token: string, refreshToken: string, user: User) => void;
+  login: (token: string, user: User) => void;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -25,7 +24,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
-  refreshToken: null,
   isLoading: true,
   login: () => {},
   logout: async () => {},
@@ -35,52 +33,45 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedRefreshToken = localStorage.getItem('refreshToken');
-    const storedUser = localStorage.getItem('user');
-
-    if (storedToken && storedRefreshToken && storedUser) {
+    const restoreSession = async () => {
       try {
-        setToken(storedToken);
-        setRefreshToken(storedRefreshToken);
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-      }
-    }
+        const refreshResponse = await authApi.refresh();
+        const newAccessToken = refreshResponse.data.accessToken;
+        setAccessToken(newAccessToken);
+        setToken(newAccessToken);
 
-    setIsLoading(false);
+        const profileResponse = await authApi.getProfile();
+        setUser(profileResponse.data);
+      } catch {
+        setAccessToken(null);
+        setToken(null);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    restoreSession();
   }, []);
 
-  const login = useCallback((newToken: string, newRefreshToken: string, newUser: User) => {
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('refreshToken', newRefreshToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
+  const login = useCallback((newToken: string, newUser: User) => {
+    setAccessToken(newToken);
     setToken(newToken);
-    setRefreshToken(newRefreshToken);
     setUser(newUser);
   }, []);
 
   const logout = useCallback(async () => {
-    const storedRefreshToken = localStorage.getItem('refreshToken');
-
     try {
-      await authApi.logout(storedRefreshToken ?? undefined);
+      await authApi.logout();
     } catch {
       // Always clear the client session, even if the API call fails.
     } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      setAccessToken(null);
       setToken(null);
-      setRefreshToken(null);
       setUser(null);
       router.push('/login');
     }
@@ -91,7 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         token,
-        refreshToken,
         isLoading,
         login,
         logout,

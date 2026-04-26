@@ -10,17 +10,9 @@ import { PawPrint, Activity, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { authApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/auth-context';
 
 export default function LoginPage() {
-  return (
-    <AuthProvider>
-      <LoginForm />
-    </AuthProvider>
-  );
-}
-
-function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +50,7 @@ function LoginForm() {
 
     try {
       const response = await authApi.login(email, password);
-      login(response.data.accessToken, response.data.refreshToken, response.data.user);
+      login(response.data.accessToken, response.data.user);
       toast.success('¡Bienvenido de vuelta!', {
         description: 'Redirigiendo al dashboard...',
       });

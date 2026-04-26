@@ -39,27 +39,33 @@ import type {
 let redirectHandler: (url: string) => void = (url) => {
   if (typeof window !== 'undefined') window.location.href = url;
 };
+let accessToken: string | null = null;
 
 export const setRedirectHandler = (handler: (url: string) => void) => {
   redirectHandler = handler;
 };
+export const setAccessToken = (token: string | null) => {
+  accessToken = token;
+};
+export const getAccessToken = () => accessToken;
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  } else if (config.headers?.Authorization) {
+    delete config.headers.Authorization;
   }
+
   return config;
 });
 
@@ -77,6 +83,13 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
+const clearSession = () => {
+  setAccessToken(null);
+  if (typeof window !== 'undefined') {
+    redirectHandler('/login');
+  }
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -84,11 +97,7 @@ api.interceptors.response.use(
     
     // Evitar loop en la ruta de refresh
     if (originalRequest.url === '/auth/refresh') {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        redirectHandler('/login');
-      }
+      clearSession();
       return Promise.reject(error);
     }
 
@@ -100,7 +109,9 @@ api.interceptors.response.use(
           failedQueue.push({ resolve, reject });
         })
           .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
+            if (token) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+            }
             return api(originalRequest);
           })
           .catch((err) => {
@@ -111,18 +122,11 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
-        if (!refreshToken) {
-          throw new Error('No refresh token exists');
-        }
-
-        const { data } = await axios.post<{ accessToken: string; refreshToken: string }>(
-          `${API_URL}/auth/refresh`,
-          { refreshToken }
+        const { data } = await api.post<{ accessToken: string; refreshToken: string }>(
+          '/auth/refresh'
         );
 
-        localStorage.setItem('token', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
+        setAccessToken(data.accessToken);
         
         api.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
         originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
@@ -134,11 +138,7 @@ api.interceptors.response.use(
       } catch (err) {
         processQueue(err, null);
         isRefreshing = false;
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          redirectHandler('/login');
-        }
+        clearSession();
         return Promise.reject(err);
       }
     }
@@ -153,10 +153,8 @@ export const authApi = {
   login: (email: string, password: string) =>
     api.post<{ user: User; accessToken: string; refreshToken: string }>('/auth/login', { email, password }),
   register: (data: CreateUserDto) => api.post<{ user: User; accessToken: string; refreshToken: string }>('/auth/register', data),
-  refresh: (refreshToken: string) =>
-    api.post<{ accessToken: string; refreshToken: string }>('/auth/refresh', { refreshToken }),
-  logout: (refreshToken?: string) =>
-    api.post('/auth/logout', { refreshToken }),
+  refresh: () => api.post<{ accessToken: string; refreshToken: string }>('/auth/refresh'),
+  logout: () => api.post('/auth/logout'),
   getProfile: () => api.get<User>('/auth/profile'),
 };
 
