@@ -17,11 +17,16 @@ import { NotificationModule } from './modules/notifications/notification.module'
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { PrescriptionsModule } from './modules/prescriptions/prescriptions.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { envValidationSchema } from './config/env.validation';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validationSchema: envValidationSchema,
+      validationOptions: {
+        abortEarly: false,
+      },
     }),
     ThrottlerModule.forRoot([
       {

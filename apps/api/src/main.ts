@@ -6,20 +6,33 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './modules/common/filters/http-exception.filter';
 
+const parseAllowedOrigins = (): string[] => {
+  const fromCorsOrigins = process.env.CORS_ORIGINS
+    ?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (fromCorsOrigins && fromCorsOrigins.length > 0) {
+    return fromCorsOrigins;
+  }
+
+  return ['http://localhost:3000', 'http://127.0.0.1:3000'];
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const allowedOrigins = parseAllowedOrigins();
 
   app.use(helmet());
 
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: allowedOrigins,
     credentials: true,
   });
 
   app.use((req: any, res: any, next: any) => {
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
       const origin = req.headers.origin;
-      const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'];
       if (origin && !allowedOrigins.includes(origin)) {
         res.status(403).json({ message: 'Origen no permitido' });
         return;

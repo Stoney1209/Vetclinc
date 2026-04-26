@@ -74,6 +74,8 @@ export class AppointmentsController {
   }
 
   @Post(':id/confirm')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.RECEPTIONIST)
   @ApiOperation({ summary: 'Confirm appointment' })
   confirm(@Param('id') id: string) {
     return this.notificationService.confirmAppointment(id);
