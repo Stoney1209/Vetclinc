@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProducts, useLowStock, useExpiringProducts, useCategories, useAdjustStock, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/use-inventory';
+import type { CreateProductDto } from '@/types';
 import { Package, AlertTriangle, Clock, Plus, Minus, TrendingDown, TrendingUp, Pencil, Trash2, X } from 'lucide-react';
 import { formatCurrency, formatDate, formatPlainDate } from '@/lib/utils';
 import { useState, useEffect } from 'react';
@@ -109,7 +110,7 @@ export default function InventoryPage() {
   const handleCreate = async () => {
     if (!newProduct.name || !newProduct.sku || !newProduct.categoryId) return;
     
-    const productData: Record<string, unknown> = {
+    const productData: CreateProductDto = {
       name: newProduct.name,
       sku: newProduct.sku,
       price: Number(newProduct.price) || 0,

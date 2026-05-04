@@ -24,7 +24,7 @@ import {
 import { usePrescriptions, useCreatePrescription } from '@/hooks/use-prescriptions';
 import { useProducts } from '@/hooks/use-inventory';
 import { Pill, Plus, Trash2, Clock, FileText } from 'lucide-react';
-import type { Prescription, CreatePrescriptionItemDto } from '@/types';
+import type { Prescription, CreatePrescriptionItemDto, Product } from '@/types';
 
 interface PrescriptionFormProps {
   medicalRecordId: string;
@@ -48,7 +48,7 @@ export function PrescriptionForm({ medicalRecordId, petName }: PrescriptionFormP
 
   const { data: products } = useProducts();
   const createMutation = useCreatePrescription();
-  const productList = products?.data || [];
+  const productList: Product[] = products?.data || [];
 
   const addItem = () => {
     setItems([...items, { ...emptyItem }]);
@@ -65,7 +65,7 @@ export function PrescriptionForm({ medicalRecordId, petName }: PrescriptionFormP
     updated[index] = { ...updated[index], [field]: value };
 
     if (field === 'productId' && typeof value === 'string' && value) {
-      const product = productList.find((p: any) => p.id === value);
+        const product = productList.find((p: Product) => p.id === value);
       if (product) {
         updated[index].productName = product.name;
       }
@@ -129,7 +129,7 @@ export function PrescriptionForm({ medicalRecordId, petName }: PrescriptionFormP
                       <SelectValue placeholder="Seleccionar producto" />
                     </SelectTrigger>
                     <SelectContent>
-                      {productList.map((p: any) => (
+                      {productList.map((p: Product) => (
                         <SelectItem key={p.id} value={p.id}>
                           {p.name} ({p.sku})
                         </SelectItem>
@@ -174,8 +174,9 @@ export function PrescriptionForm({ medicalRecordId, petName }: PrescriptionFormP
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Cantidad total</Label>
+                  <Label htmlFor="quantity" className="text-xs">Cantidad total</Label>
                   <Input
+                    id="quantity"
                     type="number"
                     min={1}
                     value={item.quantity}

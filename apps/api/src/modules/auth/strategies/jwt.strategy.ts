@@ -4,11 +4,12 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 import { PrismaService } from '../../../database/prisma.service';
+import { Role } from '@vetclinic/prisma-client';
 
 interface JwtPayload {
   sub: string;
   email: string;
-  role: string;
+  role: Role;
 }
 
 @Injectable()

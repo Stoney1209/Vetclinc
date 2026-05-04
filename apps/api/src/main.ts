@@ -30,17 +30,7 @@ async function bootstrap() {
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
-  });
-
-  app.use((req: any, res: any, next: any) => {
-    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
-      const origin = req.headers.origin;
-      if (origin && !allowedOrigins.includes(origin)) {
-        res.status(403).json({ message: 'Origen no permitido' });
-        return;
-      }
-    }
-    next();
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
   app.useGlobalPipes(

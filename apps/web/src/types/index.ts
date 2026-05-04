@@ -226,7 +226,7 @@ export interface CreateProductDto {
 export interface UpdateProductDto extends Partial<CreateProductDto> {}
 
 export interface AdjustStockDto {
-  quantity: number;
+  adjustment: number;
   reason?: string;
 }
 
@@ -267,6 +267,7 @@ export interface AddVaccinationDto {
 export interface CreateMedicalRecordDto {
   petId: string;
   appointmentId?: string;
+  veterinarianId?: string;
   subjective?: string;
   objective?: string;
   assessment?: string;

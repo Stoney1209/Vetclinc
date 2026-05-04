@@ -38,20 +38,6 @@ export class ClientsService {
               breed: true,
               weight: true,
               gender: true,
-              medicalRecords: {
-                where: { dischargedAt: null },
-                select: { id: true },
-                orderBy: { recordDate: 'desc' },
-                take: 1,
-              },
-              vaccinations: {
-                orderBy: { applicationDate: 'desc' },
-                take: 5,
-              },
-              weightHistory: {
-                orderBy: { recordedAt: 'desc' },
-                take: 3,
-              },
             },
             orderBy: { createdAt: 'desc' },
           },

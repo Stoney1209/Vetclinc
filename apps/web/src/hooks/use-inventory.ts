@@ -1,35 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventoryApi } from '@/lib/api';
 import { toast } from 'sonner';
-import type { PaginationParams } from '@/types';
+import type { PaginationParams, CreateProductDto, UpdateProductDto, AdjustStockDto } from '@/types';
+import { AxiosError } from 'axios';
 
 export function useProducts(params?: PaginationParams) {
   return useQuery({
     queryKey: ['products', params],
-    queryFn: async () => {
-      try {
-        const res = await inventoryApi.getAll(params);
-        return res.data;
-      } catch (error: any) {
-        console.error('Products error:', error?.response?.status);
-        return { data: [], total: 0, page: 1, limit: 10, totalPages: 0 };
-      }
-    },
+    queryFn: () => inventoryApi.getAll(params).then((res) => res.data),
   });
 }
 
 export function useLowStock() {
   return useQuery({
     queryKey: ['low-stock'],
-    queryFn: async () => {
-      try {
-        const res = await inventoryApi.getLowStock();
-        return res.data;
-      } catch (error: any) {
-        console.error('Low stock error:', error?.response?.status);
-        return [];
-      }
-    },
+    queryFn: () => inventoryApi.getLowStock().then((res) => res.data),
   });
 }
 
@@ -59,13 +44,13 @@ export function useCreateProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => inventoryApi.create(data),
+    mutationFn: (data: CreateProductDto) => inventoryApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Producto creado');
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Error al crear el producto');
+    onError: (err: AxiosError) => {
+      toast.error((err?.response?.data as any)?.message || 'Error al crear el producto');
     },
   });
 }
@@ -74,7 +59,7 @@ export function useAdjustStock() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: AdjustStockDto }) =>
       inventoryApi.adjustStock(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -82,8 +67,8 @@ export function useAdjustStock() {
       queryClient.invalidateQueries({ queryKey: ['expiring-products'] });
       toast.success('Stock ajustado');
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Error al ajustar el stock');
+    onError: (err: AxiosError) => {
+      toast.error((err?.response?.data as any)?.message || 'Error al ajustar el stock');
     },
   });
 }
@@ -92,7 +77,7 @@ export function useUpdateProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateProductDto }) =>
       inventoryApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -100,8 +85,8 @@ export function useUpdateProduct() {
       queryClient.invalidateQueries({ queryKey: ['expiring-products'] });
       toast.success('Producto actualizado');
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Error al actualizar el producto');
+    onError: (err: AxiosError) => {
+      toast.error((err?.response?.data as any)?.message || 'Error al actualizar el producto');
     },
   });
 }
@@ -117,8 +102,8 @@ export function useDeleteProduct() {
       queryClient.invalidateQueries({ queryKey: ['expiring-products'] });
       toast.success('Producto eliminado');
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Error al eliminar el producto');
+    onError: (err: AxiosError) => {
+      toast.error((err?.response?.data as any)?.message || 'Error al eliminar el producto');
     },
   });
 }

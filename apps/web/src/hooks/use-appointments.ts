@@ -1,20 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { appointmentsApi, appointmentsConfirmApi } from '@/lib/api';
 import { toast } from 'sonner';
-import type { PaginationParams } from '@/types';
+import type { PaginationParams, CreateAppointmentDto, UpdateAppointmentDto } from '@/types';
 
 export function useAppointments(params?: PaginationParams) {
   return useQuery({
     queryKey: ['appointments', params],
-    queryFn: async () => {
-      try {
-        const res = await appointmentsApi.getAll(params);
-        return res.data;
-      } catch (error: any) {
-        console.error('Appointments error:', error?.response?.status);
-        return { data: [], total: 0, page: 1, limit: 10, totalPages: 0 };
-      }
-    },
+    queryFn: () => appointmentsApi.getAll(params).then((res) => res.data),
   });
 }
 
@@ -39,7 +31,7 @@ export function useCreateAppointment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => appointmentsApi.create(data),
+    mutationFn: (data: CreateAppointmentDto) => appointmentsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       queryClient.invalidateQueries({ queryKey: ['calendar'] });
@@ -55,7 +47,7 @@ export function useUpdateAppointment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdateAppointmentDto }) =>
       appointmentsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });

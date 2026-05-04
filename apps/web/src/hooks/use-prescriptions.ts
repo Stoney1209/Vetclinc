@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { prescriptionsApi, medicalRecordsFollowUpApi } from '@/lib/api';
 import { toast } from 'sonner';
 import type { CreatePrescriptionDto, ScheduleFollowUpDto } from '@/types';
+import { AxiosError } from 'axios';
 
 export function usePrescriptions(recordId: string) {
   return useQuery({
@@ -29,8 +30,8 @@ export function useCreatePrescription() {
       queryClient.invalidateQueries({ queryKey: ['medical-records'] });
       toast.success('Prescripción creada');
     },
-    onError: () => {
-      toast.error('Error al crear la prescripción');
+    onError: (err: AxiosError) => {
+      toast.error((err?.response?.data as any)?.message || 'Error al crear la prescripción');
     },
   });
 }
@@ -46,8 +47,8 @@ export function useScheduleFollowUp() {
       queryClient.invalidateQueries({ queryKey: ['follow-ups'] });
       toast.success('Seguimiento programado');
     },
-    onError: () => {
-      toast.error('Error al programar seguimiento');
+    onError: (err: AxiosError) => {
+      toast.error((err?.response?.data as any)?.message || 'Error al programar seguimiento');
     },
   });
 }
@@ -55,14 +56,6 @@ export function useScheduleFollowUp() {
 export function useUpcomingFollowUps() {
   return useQuery({
     queryKey: ['follow-ups'],
-    queryFn: async () => {
-      try {
-        const res = await medicalRecordsFollowUpApi.getUpcoming();
-        return res.data;
-      } catch (error: any) {
-        console.error('Follow-ups error:', error?.response?.status);
-        return [];
-      }
-    },
+    queryFn: () => medicalRecordsFollowUpApi.getUpcoming().then((res) => res.data),
   });
 }
