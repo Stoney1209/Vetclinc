@@ -2,18 +2,17 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcryptjs';
 import { AuthService } from '../../modules/auth/auth.service';
 import { PrismaService } from '../../database/prisma.service';
+import { UserCommonService } from '../../modules/common/services/user-common.service';
 import { createMockUser } from '../mocks/prisma.mock';
-
-jest.mock('bcryptjs');
 
 describe('AuthService', () => {
   let authService: AuthService;
   let prismaService: any;
   let jwtService: any;
   let configService: any;
+  let userCommonService: any;
 
   const mockUser = createMockUser({
     id: 'user-123',
@@ -49,12 +48,28 @@ describe('AuthService', () => {
       get: jest.fn().mockReturnValue('test-secret'),
     };
 
+    userCommonService = {
+      validateUniqueEmail: jest.fn(),
+      hashPassword: jest.fn(),
+      validatePassword: jest.fn(),
+      findUserByEmail: jest.fn(),
+      findUserById: jest.fn(),
+      getPublicUserSelectFields: jest.fn().mockReturnValue({
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: PrismaService, useValue: prismaService },
         { provide: JwtService, useValue: jwtService },
         { provide: ConfigService, useValue: configService },
+        { provide: UserCommonService, useValue: userCommonService },
       ],
     }).compile();
 
@@ -77,7 +92,8 @@ describe('AuthService', () => {
     };
 
     it('should register a new user successfully', async () => {
-      prismaService.user.findUnique.mockResolvedValue(null);
+      userCommonService.validateUniqueEmail.mockResolvedValue(undefined);
+      userCommonService.hashPassword.mockResolvedValue('$2b$10$hashedpassword');
       prismaService.user.create.mockResolvedValue({
         id: mockUser.id,
         email: mockUser.email,
@@ -85,14 +101,11 @@ describe('AuthService', () => {
         lastName: mockUser.lastName,
         role: mockUser.role,
       });
-      (bcrypt.hash as jest.Mock).mockResolvedValue('$2b$10$hashedpassword');
 
       const result = await authService.register(registerDto);
 
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
-        where: { email: registerDto.email },
-      });
-      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
+      expect(userCommonService.validateUniqueEmail).toHaveBeenCalledWith(registerDto.email);
+      expect(userCommonService.hashPassword).toHaveBeenCalledWith(registerDto.password);
       expect(prismaService.user.create).toHaveBeenCalled();
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('accessToken');
@@ -101,18 +114,18 @@ describe('AuthService', () => {
     });
 
     it('should throw ConflictException when email already exists', async () => {
-      prismaService.user.findUnique.mockResolvedValue(mockUser);
+      userCommonService.validateUniqueEmail.mockRejectedValue(
+        new ConflictException('El email ya estÃ¡ registrado'),
+      );
 
       await expect(authService.register(registerDto)).rejects.toThrow(
         ConflictException,
       );
-      await expect(authService.register(registerDto)).rejects.toThrow(
-        'El email ya está registrado',
-      );
     });
 
     it('should hash password correctly', async () => {
-      prismaService.user.findUnique.mockResolvedValue(null);
+      userCommonService.validateUniqueEmail.mockResolvedValue(undefined);
+      userCommonService.hashPassword.mockResolvedValue('$2b$10$hashedpassword');
       prismaService.user.create.mockResolvedValue({
         id: mockUser.id,
         email: mockUser.email,
@@ -120,11 +133,10 @@ describe('AuthService', () => {
         lastName: mockUser.lastName,
         role: mockUser.role,
       });
-      (bcrypt.hash as jest.Mock).mockResolvedValue('$2b$10$hashedpassword');
 
       await authService.register(registerDto);
 
-      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
+      expect(userCommonService.hashPassword).toHaveBeenCalledWith(registerDto.password);
     });
   });
 
@@ -135,15 +147,13 @@ describe('AuthService', () => {
     };
 
     it('should login successfully with valid credentials', async () => {
-      prismaService.user.findUnique.mockResolvedValue(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      userCommonService.findUserByEmail.mockResolvedValue(mockUser);
+      userCommonService.validatePassword.mockResolvedValue(true);
 
       const result = await authService.login(loginDto);
 
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
-        where: { email: loginDto.email },
-      });
-      expect(bcrypt.compare).toHaveBeenCalledWith(
+      expect(userCommonService.findUserByEmail).toHaveBeenCalledWith(loginDto.email);
+      expect(userCommonService.validatePassword).toHaveBeenCalledWith(
         loginDto.password,
         mockUser.password,
       );
@@ -154,7 +164,7 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException when user not found', async () => {
-      prismaService.user.findUnique.mockResolvedValue(null);
+      userCommonService.findUserByEmail.mockResolvedValue(null);
 
       await expect(authService.login(loginDto)).rejects.toThrow(
         UnauthorizedException,
@@ -162,8 +172,8 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException when password is incorrect', async () => {
-      prismaService.user.findUnique.mockResolvedValue(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      userCommonService.findUserByEmail.mockResolvedValue(mockUser);
+      userCommonService.validatePassword.mockResolvedValue(false);
 
       await expect(authService.login(loginDto)).rejects.toThrow(
         UnauthorizedException,
@@ -172,8 +182,8 @@ describe('AuthService', () => {
 
     it('should throw UnauthorizedException when user is inactive', async () => {
       const inactiveUser = { ...mockUser, isActive: false };
-      prismaService.user.findUnique.mockResolvedValue(inactiveUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      userCommonService.findUserByEmail.mockResolvedValue(inactiveUser);
+      userCommonService.validatePassword.mockResolvedValue(true);
 
       await expect(authService.login(loginDto)).rejects.toThrow(
         UnauthorizedException,
@@ -181,8 +191,8 @@ describe('AuthService', () => {
     });
 
     it('should generate valid JWT token', async () => {
-      prismaService.user.findUnique.mockResolvedValue(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      userCommonService.findUserByEmail.mockResolvedValue(mockUser);
+      userCommonService.validatePassword.mockResolvedValue(true);
 
       await authService.login(loginDto);
 
@@ -199,30 +209,17 @@ describe('AuthService', () => {
 
   describe('getProfile', () => {
     it('should return user profile successfully', async () => {
-      prismaService.user.findUnique.mockResolvedValue(mockUser);
+      userCommonService.findUserById.mockResolvedValue(mockUser);
 
       const result = await authService.getProfile(mockUser.id);
 
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
-        where: { id: mockUser.id },
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          specialty: true,
-          licenseNumber: true,
-          isActive: true,
-          createdAt: true,
-        },
-      });
+      expect(userCommonService.findUserById).toHaveBeenCalledWith(mockUser.id);
       expect(result.id).toBe(mockUser.id);
       expect(result.email).toBe(mockUser.email);
     });
 
     it('should throw UnauthorizedException when user not found', async () => {
-      prismaService.user.findUnique.mockResolvedValue(null);
+      userCommonService.findUserById.mockRejectedValue(new UnauthorizedException());
 
       await expect(
         authService.getProfile('non-existent-id'),
