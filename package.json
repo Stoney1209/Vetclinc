@@ -3,17 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/setup-prisma-env.js && pnpm --parallel -r dev",
-    "build": "node scripts/setup-prisma-env.js && pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
-    "build:prod": "node scripts/setup-prisma-env.js && pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
-    "build:render": "node scripts/setup-prisma-env.js && pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
+    "dev": "node scripts/fix-local-prisma.js && pnpm --parallel -r dev",
+    "build": "node scripts/fix-local-prisma.js && pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
+    "build:prod": "pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
+    "build:render": "pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
     "lint": "pnpm --parallel -r lint",
-    "db:migrate": "node scripts/setup-prisma-env.js && pnpm --filter @vetclinic/api db:migrate",
-    "db:generate": "node scripts/setup-prisma-env.js && pnpm --filter @vetclinic/api db:generate",
-    "db:push": "node scripts/setup-prisma-env.js && pnpm --filter @vetclinic/api db:push",
-    "db:studio": "node scripts/setup-prisma-env.js && pnpm --filter @vetclinic/api db:studio",
-    "db:seed": "node scripts/setup-prisma-env.js && pnpm --filter @vetclinic/api db:seed",
-    "setup-prisma": "node scripts/setup-prisma-env.js"
+    "db:migrate": "node scripts/fix-local-prisma.js && pnpm --filter @vetclinic/api db:migrate",
+    "db:generate": "node scripts/fix-local-prisma.js && pnpm --filter @vetclinic/api db:generate",
+    "db:push": "node scripts/fix-local-prisma.js && pnpm --filter @vetclinic/api db:push",
+    "db:studio": "node scripts/fix-local-prisma.js && pnpm --filter @vetclinic/api db:studio",
+    "db:seed": "node scripts/fix-local-prisma.js && pnpm --filter @vetclinic/api db:seed"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
