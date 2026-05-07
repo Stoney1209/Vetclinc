@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nest start --watch",
-    "build": "pnpm --dir ../.. exec prisma generate --schema=prisma/schema.prisma && nest build",
+    "build": "npx prisma@5.22.0 generate --schema=../../prisma/schema.prisma && nest build",
     "start": "node dist/main",
     "lint": "eslint \"src/**/*.ts\"",
     "test": "jest",
