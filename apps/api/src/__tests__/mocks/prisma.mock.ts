@@ -1,4 +1,3 @@
-import { Role, AppointmentType, AppointmentStatus } from '@prisma/client';
 import { DeepMockProxy, mockDeep, mockReset } from 'jest-mock-extended';
 
 export type PrismaMock = DeepMockProxy<any>;
@@ -17,7 +16,7 @@ export const createMockUser = (overrides: Partial<any> = {}): any => ({
   firstName: 'Test',
   lastName: 'User',
   password: '$2b$10$hashedpassword',
-  role: Role.ADMIN,
+  role: 'ADMIN',
   specialty: null,
   licenseNumber: null,
   isActive: true,
@@ -62,8 +61,8 @@ export const createMockAppointment = (overrides: Partial<any> = {}): any => ({
   id: 'test-appointment-id',
   dateTime: new Date(),
   duration: 30,
-  type: AppointmentType.CONSULTATION,
-  status: AppointmentStatus.SCHEDULED,
+  type: 'CONSULTATION',
+  status: 'SCHEDULED',
   notes: 'Test notes',
   colorCode: '#3b82f6',
   petId: 'test-pet-id',
