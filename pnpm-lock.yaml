@@ -247,9 +247,18 @@ importers:
       sonner:
         specifier: ^1.4.0
         version: 1.7.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      autoprefixer:
+        specifier: ^10.4.17
+        version: 10.5.0(postcss@8.5.10)
+      postcss:
+        specifier: ^8.4.33
+        version: 8.5.10
       tailwind-merge:
         specifier: ^2.2.0
         version: 2.6.1
+      tailwindcss:
+        specifier: ^3.4.1
+        version: 3.4.19
       zod:
         specifier: ^3.22.4
         version: 3.25.76
@@ -278,9 +287,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.0.1
         version: 6.0.1(vite@8.0.10(@types/node@20.19.37)(jiti@1.21.7)(terser@5.46.2))
-      autoprefixer:
-        specifier: ^10.4.17
-        version: 10.5.0(postcss@8.5.10)
       eslint:
         specifier: ^8.57.1
         version: 8.57.1
@@ -290,12 +296,6 @@ importers:
       jsdom:
         specifier: ^29.0.1
         version: 29.0.2(@noble/hashes@1.8.0)
-      postcss:
-        specifier: ^8.4.33
-        version: 8.5.10
-      tailwindcss:
-        specifier: ^3.4.1
-        version: 3.4.19
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
