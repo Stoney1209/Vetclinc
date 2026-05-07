@@ -6,7 +6,7 @@
     "dev": "node scripts/fix-local-prisma.js && pnpm --parallel -r dev",
     "build": "node scripts/fix-local-prisma.js && pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
     "build:prod": "pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
-    "build:render": "pnpm install && pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm build",
+    "build:render": "pnpm install && npx prisma generate --schema=prisma/schema.prisma && pnpm build",
     "lint": "pnpm --parallel -r lint",
     "db:migrate": "node scripts/fix-local-prisma.js && pnpm --filter @vetclinic/api db:migrate",
     "db:generate": "node scripts/fix-local-prisma.js && pnpm --filter @vetclinic/api db:generate",
