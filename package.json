@@ -3,17 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm --parallel -r dev",
-    "build": "pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
-    "build:prod": "node scripts/build-for-production.js && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
-    "build:render": "node scripts/build-for-production.js && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
+    "dev": "node scripts/setup-prisma-env.js && pnpm --parallel -r dev",
+    "build": "node scripts/setup-prisma-env.js && pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
+    "build:prod": "node scripts/setup-prisma-env.js && pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
+    "build:render": "node scripts/setup-prisma-env.js && pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
     "lint": "pnpm --parallel -r lint",
-    "db:migrate": "pnpm --filter @vetclinic/api db:migrate",
-    "db:generate": "pnpm --filter @vetclinic/api db:generate",
-    "db:push": "pnpm --filter @vetclinic/api db:push",
-    "db:studio": "pnpm --filter @vetclinic/api db:studio",
-    "db:seed": "pnpm --filter @vetclinic/api db:seed",
-    "fix-prisma:prod": "node scripts/fix-prisma-for-production.js"
+    "db:migrate": "node scripts/setup-prisma-env.js && pnpm --filter @vetclinic/api db:migrate",
+    "db:generate": "node scripts/setup-prisma-env.js && pnpm --filter @vetclinic/api db:generate",
+    "db:push": "node scripts/setup-prisma-env.js && pnpm --filter @vetclinic/api db:push",
+    "db:studio": "node scripts/setup-prisma-env.js && pnpm --filter @vetclinic/api db:studio",
+    "db:seed": "node scripts/setup-prisma-env.js && pnpm --filter @vetclinic/api db:seed",
+    "setup-prisma": "node scripts/setup-prisma-env.js"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
