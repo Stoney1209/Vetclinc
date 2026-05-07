@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { authManager } from './auth-utils';
 import type {
   Client,
   Pet,
@@ -36,18 +37,15 @@ import type {
   AppointmentsByType,
 } from '@/types';
 
-let redirectHandler: (url: string) => void = (url) => {
-  if (typeof window !== 'undefined') window.location.href = url;
-};
-let accessToken: string | null = null;
-
 export const setRedirectHandler = (handler: (url: string) => void) => {
-  redirectHandler = handler;
+  authManager.setRedirectHandler(handler);
 };
+
 export const setAccessToken = (token: string | null) => {
-  accessToken = token;
+  authManager.setAccessToken(token);
 };
-export const getAccessToken = () => accessToken;
+
+export const getAccessToken = () => authManager.getAccessToken();
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
@@ -60,8 +58,9 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
+  const token = authManager.getAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   } else if (config.headers?.Authorization) {
     delete config.headers.Authorization;
   }
@@ -69,76 +68,28 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-let isRefreshing = false;
-let failedQueue: Array<{ resolve: (value?: unknown) => void; reject: (reason?: any) => void }> = [];
-
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
-};
-
-const clearSession = () => {
-  setAccessToken(null);
-  if (typeof window !== 'undefined') {
-    redirectHandler('/login');
-  }
-};
-
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
     
     // Evitar loop en la ruta de refresh
-    if (originalRequest.url === '/auth/refresh') {
-      clearSession();
+    if (authManager.isTokenRefreshUrl(originalRequest.url)) {
+      authManager.clearSession();
       return Promise.reject(error);
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      if (isRefreshing) {
-        return new Promise(function (resolve, reject) {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            if (token) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-            }
-            return api(originalRequest);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
-      }
-
-      isRefreshing = true;
-
       try {
-        const { data } = await api.post<{ accessToken: string; refreshToken: string }>(
-          '/auth/refresh'
-        );
-
-        setAccessToken(data.accessToken);
+        const newToken = await authManager.refreshAuthToken();
         
-        api.defaults.headers.common['Authorization'] = `Bearer ${data.accessToken}`;
-        originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
-        
-        processQueue(null, data.accessToken);
-        isRefreshing = false;
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
         
         return api(originalRequest);
       } catch (err) {
-        processQueue(err, null);
-        isRefreshing = false;
-        clearSession();
         return Promise.reject(err);
       }
     }

@@ -10,6 +10,7 @@ import { useMedicalRecords } from '@/hooks/use-medical-records';
 import { usePrescriptions } from '@/hooks/use-prescriptions';
 import { useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
+import type { MedicalRecord, Prescription, PaginatedResponse } from '@/types';
 
 interface RecordDetailDialogProps {
   petId: string;
@@ -31,13 +32,16 @@ export function RecordDetailDialog({
   onOpenChange,
 }: RecordDetailDialogProps) {
   const { data: recordsResponse, isLoading } = useMedicalRecords(petId);
-  const recordsList = useMemo(() => (recordsResponse as any)?.data || [], [recordsResponse]);
+  const recordsList = useMemo(() => (recordsResponse as MedicalRecord[]) || [], [recordsResponse]);
   const firstRecordId = recordsList.length > 0 ? recordsList[0].id : '';
   const { data: prescriptionsResponse } = usePrescriptions(firstRecordId);
-  const prescriptions = useMemo(() => (Array.isArray(prescriptionsResponse) ? prescriptionsResponse : (prescriptionsResponse as any)?.data || []), [prescriptionsResponse]);
+  const prescriptions = useMemo(() => {
+    if (Array.isArray(prescriptionsResponse)) return prescriptionsResponse;
+    return (prescriptionsResponse as unknown as PaginatedResponse<Prescription>)?.data || [];
+  }, [prescriptionsResponse]);
 
   const handlePrint = useCallback(() => {
-    const recordsHtml = recordsList.map((record: any, index: number) => `
+    const recordsHtml = recordsList.map((record: MedicalRecord, index: number) => `
       <div class="record">
         <h2>Expediente #${index + 1} - ${formatDate(record.createdAt)}</h2>
         <p><strong>Veterinario:</strong> ${record.veterinarian ? `Dr. ${record.veterinarian.firstName} ${record.veterinarian.lastName}` : 'N/A'}</p>
@@ -54,10 +58,11 @@ export function RecordDetailDialog({
 
     const prescriptionsHtml = prescriptions.length > 0 ? `
       <h2>Prescripciones (${prescriptions.length})</h2>
-      ${prescriptions.map((rx: any) => `
+      ${prescriptions.map((rx: Prescription) => `
         <div class="soap">
-          <p><strong>${rx.medication}</strong></p>
-          <p>${rx.dosage} • ${rx.frequency}${rx.duration ? ` • Duración: ${rx.duration}` : ''}</p>
+          <p><strong>Prescripción #${rx.id}</strong></p>
+          ${rx.notes ? `<p>${rx.notes}</p>` : ''}
+          ${rx.items.map(item => `<p>${item.productName} - ${item.dosage} • ${item.frequency}</p>`).join('')}
         </div>
       `).join('')}
     ` : '';
@@ -143,7 +148,7 @@ export function RecordDetailDialog({
             </div>
           ) : (
             <div className="space-y-4 py-4">
-              {recordsList.map((record: any, index: number) => (
+              {recordsList.map((record: MedicalRecord, index: number) => (
                 <Card key={record.id} className="ghost-border ambient-shadow hover:shadow-lg transition-shadow">
                   <CardContent className="p-5">
                     {/* Header */}
@@ -248,16 +253,17 @@ export function RecordDetailDialog({
                           Prescripciones ({prescriptions.length})
                         </p>
                         <div className="space-y-2">
-                          {prescriptions.map((rx: any) => (
+                          {prescriptions.map((rx: Prescription) => (
                             <div key={rx.id} className="p-3 rounded-lg bg-[hsl(var(--surface-low))]">
-                              <p className="text-sm font-medium">{rx.medication}</p>
-                              <p className="text-xs text-muted-foreground">{rx.dosage} • {rx.frequency}</p>
-                              {rx.duration && (
-                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                  <Clock className="h-3 w-3" />
-                                  Duración: {rx.duration}
-                                </p>
-                              )}
+                              <p className="text-sm font-medium">Prescripción #{rx.id}</p>
+                              {rx.notes && <p className="text-xs text-muted-foreground mt-1">{rx.notes}</p>}
+                              <div className="mt-2 space-y-1">
+                                {rx.items.map((item, idx) => (
+                                  <div key={idx} className="text-xs text-muted-foreground">
+                                    {item.productName} - {item.dosage} • {item.frequency}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           ))}
                         </div>

@@ -17,6 +17,10 @@ const parseAllowedOrigins = (): string[] => {
     return fromCorsOrigins;
   }
 
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('CORS_ORIGINS environment variable is missing in production');
+  }
+
   return ['http://localhost:3000', 'http://127.0.0.1:3000'];
 };
 

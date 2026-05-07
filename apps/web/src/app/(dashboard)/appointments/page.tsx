@@ -11,9 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAppointments, useCreateAppointment, useDeleteAppointment, useConfirmAppointment, useResendConfirmation } from '@/hooks/use-appointments';
 import { useClients } from '@/hooks/use-clients';
 import { useVeterinarians } from '@/hooks/use-veterinarians';
+import { AppointmentList } from '@/components/appointments/AppointmentList';
+import type { Appointment, Client, User } from '@/types';
 import { formatDateTime, cn } from '@/lib/utils';
 import { appointmentTypes, typeBadgeVariant } from '@/lib/appointment-types';
-import { Calendar as CalendarIcon, Plus, Clock, User, Dog, Stethoscope, Syringe, Scissors, AlertCircle, X, LayoutGrid, List, ArrowRight, Check, Mail, Send } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Clock, User as UserIcon, Dog, Stethoscope, Syringe, Scissors, AlertCircle, X, LayoutGrid, List, ArrowRight, Check, Mail, Send } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
 import {
   Dialog,
@@ -161,18 +163,18 @@ function AppointmentsContent() {
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder="Seleccionar mascota" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {clients?.map((client: any) =>
-                      client.pets.map((pet: any) => (
-                        <SelectItem key={pet.id} value={pet.id}>
-                          <div className="flex items-center gap-2">
-                            <Dog className="h-4 w-4" />
-                            {client.firstName} {client.lastName} - {pet.name}
-                          </div>
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
+                   <SelectContent>
+                     {clients?.map((client: Client) =>
+                       client.pets?.map((pet) => (
+                         <SelectItem key={pet.id} value={pet.id}>
+                           <div className="flex items-center gap-2">
+                             <Dog className="h-4 w-4" />
+                             {client.firstName} {client.lastName} - {pet.name}
+                           </div>
+                         </SelectItem>
+                       ))
+                     )}
+                   </SelectContent>
                 </Select>
               </div>
 
@@ -186,10 +188,10 @@ function AppointmentsContent() {
                     <SelectValue placeholder="Seleccionar veterinario" />
                   </SelectTrigger>
                   <SelectContent>
-                    {veterinarians?.map((vet: any) => (
+                    {veterinarians?.map((vet: User) => (
                       <SelectItem key={vet.id} value={vet.id}>
                         <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" />
+                          <UserIcon className="h-4 w-4" />
                           Dr. {vet.firstName} {vet.lastName}
                         </div>
                       </SelectItem>
@@ -367,98 +369,14 @@ function AppointmentsContent() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {isLoading ? (
-              <div className="p-8 space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <SkeletonAppointmentCard key={i} />
-                ))}
-              </div>
-            ) : appointments.length === 0 ? (
-              <EmptyState 
-                variant="appointments" 
-                action={{ label: 'Agendar cita', onClick: () => setIsDialogOpen(true) }}
-              />
-            ) : (
-              <div className="divide-y divide-border/50">
-                {appointments.map((apt: any, index: number) => {
-                  const typeInfo = appointmentTypes.find((t) => t.value === apt.type);
-                  const TypeIcon = typeInfo?.icon || Stethoscope;
-                  
-                  return (
-                    <div
-                      key={apt.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 hover:bg-muted/30 transition-colors animate-slide-up group"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                        <div
-                          className="hidden sm:block w-1.5 h-14 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: apt.colorCode || typeInfo?.color }}
-                        />
-                        <div 
-                          className="flex items-center justify-center w-10 h-10 rounded-xl text-white flex-shrink-0"
-                          style={{ backgroundColor: typeInfo?.color }}
-                        >
-                          <TypeIcon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <Dog className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium truncate">{apt.pet.name}</span>
-                            <Badge variant={typeBadgeVariant[apt.type]} className="flex-shrink-0">
-                              {typeInfo?.label}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {apt.pet.client.firstName} {apt.pet.client.lastName}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0 pl-14 sm:pl-0">
-                        <div className="text-right">
-                          <div className="flex items-center gap-2 text-sm font-mono">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            {formatDateTime(apt.dateTime)}
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <User className="h-4 w-4" />
-                            Dr. {apt.doctor.firstName} {apt.doctor.lastName}
-                          </div>
-                        </div>
-
-                        {apt.confirmedAt ? (
-                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 text-green-600 text-xs font-medium">
-                            <Check className="h-3 w-3" />
-                            Confirmada
-                          </div>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs gap-1 text-amber-600 border-amber-200 hover:bg-amber-50"
-                            onClick={() => resendMutation.mutate(apt.id)}
-                            disabled={resendMutation.isPending}
-                          >
-                            <Send className="h-3 w-3" />
-                            Reenviar
-                          </Button>
-                        )}
-
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDelete(apt.id)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            <AppointmentList 
+              appointments={appointments}
+              isLoading={isLoading}
+              onDelete={handleDelete}
+              onResend={(id) => resendMutation.mutate(id)}
+              isResending={resendMutation.isPending}
+              onCreateNew={() => setIsDialogOpen(true)}
+            />
           </CardContent>
           {view === 'list' && appointments.length > 0 && (
             <div className="p-4 border-t border-border/50">

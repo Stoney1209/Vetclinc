@@ -1,12 +1,15 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { UserCommonService } from '../common/services/user-common.service';
 import { CreateUserDto, UpdateUserDto } from './dto/users.dto';
-import * as bcrypt from 'bcryptjs';
 import { PaginationDto, paginate } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private userCommonService: UserCommonService,
+  ) {}
 
   async findAll(pagination?: PaginationDto) {
     const page = pagination?.page ?? 1;
@@ -18,17 +21,7 @@ export class UsersService {
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
         where,
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          role: true,
-          specialty: true,
-          licenseNumber: true,
-          isActive: true,
-          createdAt: true,
-        },
+        select: this.userCommonService.getUserSelectFields(),
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -40,26 +33,7 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        specialty: true,
-        licenseNumber: true,
-        isActive: true,
-        createdAt: true,
-      },
-    });
-
-    if (!user) {
-      throw new NotFoundException('Usuario no encontrado');
-    }
-
-    return user;
+    return this.userCommonService.findUserById(id);
   }
 
   async findVeterinarians() {
@@ -78,28 +52,15 @@ export class UsersService {
   }
 
   async create(dto: CreateUserDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
-
-    if (existingUser) {
-      throw new ConflictException('El email ya está registrado');
-    }
-
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    await this.userCommonService.validateUniqueEmail(dto.email);
+    const hashedPassword = await this.userCommonService.hashPassword(dto.password);
 
     return this.prisma.user.create({
       data: {
         ...dto,
         password: hashedPassword,
       },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-      },
+      select: this.userCommonService.getPublicUserSelectFields(),
     });
   }
 
@@ -109,13 +70,7 @@ export class UsersService {
     return this.prisma.user.update({
       where: { id },
       data: dto,
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-      },
+      select: this.userCommonService.getPublicUserSelectFields(),
     });
   }
 

@@ -1,8 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../database/prisma.service';
+import { UserCommonService } from '../common/services/user-common.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 
 @Injectable()
@@ -11,6 +11,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private userCommonService: UserCommonService,
   ) {}
 
   async isTokenInvalidated(token: string): Promise<boolean> {
@@ -21,15 +22,8 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
-
-    if (existingUser) {
-      throw new ConflictException('El email ya está registrado');
-    }
-
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    await this.userCommonService.validateUniqueEmail(dto.email);
+    const hashedPassword = await this.userCommonService.hashPassword(dto.password);
 
     const user = await this.prisma.user.create({
       data: {
@@ -41,13 +35,7 @@ export class AuthService {
         specialty: dto.specialty,
         licenseNumber: dto.licenseNumber,
       },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-      },
+      select: this.userCommonService.getPublicUserSelectFields(),
     });
 
     const { accessToken, refreshToken } = await this.generateTokenPair(user.id, user.email, user.role);
@@ -56,15 +44,13 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const user = await this.userCommonService.findUserByEmail(dto.email);
 
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+    const isPasswordValid = await this.userCommonService.validatePassword(dto.password, user.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
@@ -124,26 +110,7 @@ export class AuthService {
   }
 
   async getProfile(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        specialty: true,
-        licenseNumber: true,
-        isActive: true,
-        createdAt: true,
-      },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
-    }
-
-    return user;
+    return this.userCommonService.findUserById(userId);
   }
 
   async logout(userId: string, accessToken?: string, refreshToken?: string) {

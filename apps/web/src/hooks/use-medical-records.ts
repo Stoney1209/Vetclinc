@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { medicalRecordsApi } from '@/lib/api';
 import { toast } from 'sonner';
-import type { CreateMedicalRecordDto, UpdateMedicalRecordDto } from '@/types';
 import { AxiosError } from 'axios';
+import type { CreateMedicalRecordDto, UpdateMedicalRecordDto, ApiError } from '@/types';
 
 export function useMedicalRecords(petId: string) {
   return useQuery({
@@ -30,8 +30,8 @@ export function useCreateMedicalRecord() {
       queryClient.invalidateQueries({ queryKey: ['medical-records'] });
       toast.success('Nota médica creada');
     },
-    onError: (err: AxiosError) => {
-      toast.error((err?.response?.data as any)?.message || 'Error al crear la nota médica');
+    onError: (err: AxiosError<ApiError>) => {
+      toast.error(err.response?.data?.message || 'Error al crear la nota médica');
     },
   });
 }
@@ -46,8 +46,8 @@ export function useUpdateMedicalRecord() {
       queryClient.invalidateQueries({ queryKey: ['medical-records'] });
       toast.success('Nota médica actualizada');
     },
-    onError: (err: AxiosError) => {
-      toast.error((err?.response?.data as any)?.message || 'Error al actualizar la nota médica');
+    onError: (err: AxiosError<ApiError>) => {
+      toast.error(err.response?.data?.message || 'Error al actualizar la nota médica');
     },
   });
 }

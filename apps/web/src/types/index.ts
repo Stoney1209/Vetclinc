@@ -365,3 +365,9 @@ export interface AppointmentsByType {
   type: string;
   count: number;
 }
+
+export interface ApiError {
+  message: string;
+  statusCode?: number;
+  error?: string;
+}

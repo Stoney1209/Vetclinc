@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventoryApi } from '@/lib/api';
 import { toast } from 'sonner';
-import type { PaginationParams, CreateProductDto, UpdateProductDto, AdjustStockDto } from '@/types';
 import { AxiosError } from 'axios';
+import type { PaginationParams, CreateProductDto, UpdateProductDto, AdjustStockDto, ApiError } from '@/types';
 
 export function useProducts(params?: PaginationParams) {
   return useQuery({
@@ -49,8 +49,8 @@ export function useCreateProduct() {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast.success('Producto creado');
     },
-    onError: (err: AxiosError) => {
-      toast.error((err?.response?.data as any)?.message || 'Error al crear el producto');
+    onError: (err: AxiosError<ApiError>) => {
+      toast.error(err.response?.data?.message || 'Error al crear el producto');
     },
   });
 }
@@ -67,8 +67,8 @@ export function useAdjustStock() {
       queryClient.invalidateQueries({ queryKey: ['expiring-products'] });
       toast.success('Stock ajustado');
     },
-    onError: (err: AxiosError) => {
-      toast.error((err?.response?.data as any)?.message || 'Error al ajustar el stock');
+    onError: (err: AxiosError<ApiError>) => {
+      toast.error(err.response?.data?.message || 'Error al ajustar el stock');
     },
   });
 }
@@ -85,8 +85,8 @@ export function useUpdateProduct() {
       queryClient.invalidateQueries({ queryKey: ['expiring-products'] });
       toast.success('Producto actualizado');
     },
-    onError: (err: AxiosError) => {
-      toast.error((err?.response?.data as any)?.message || 'Error al actualizar el producto');
+    onError: (err: AxiosError<ApiError>) => {
+      toast.error(err.response?.data?.message || 'Error al actualizar el producto');
     },
   });
 }
@@ -102,8 +102,8 @@ export function useDeleteProduct() {
       queryClient.invalidateQueries({ queryKey: ['expiring-products'] });
       toast.success('Producto eliminado');
     },
-    onError: (err: AxiosError) => {
-      toast.error((err?.response?.data as any)?.message || 'Error al eliminar el producto');
+    onError: (err: AxiosError<ApiError>) => {
+      toast.error(err.response?.data?.message || 'Error al eliminar el producto');
     },
   });
 }

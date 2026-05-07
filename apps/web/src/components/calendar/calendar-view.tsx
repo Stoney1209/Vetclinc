@@ -20,11 +20,12 @@ import { useVeterinarians } from '@/hooks/use-veterinarians';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { appointmentTypes, typeBadgeVariant } from '@/lib/appointment-types';
 import { formatDateTime, cn } from '@/lib/utils';
+import type { Appointment, Client, User } from '@/types';
 import {
   CalendarIcon,
   Plus,
   Clock,
-  User,
+  User as UserIcon,
   Dog,
   Stethoscope,
   Syringe,
@@ -50,7 +51,7 @@ interface CalendarEvent {
   title: string;
   start: Date;
   end: Date;
-  resource: any;
+  resource: Appointment;
 }
 
 interface CalendarViewProps {
@@ -96,8 +97,8 @@ export function CalendarView({ className }: CalendarViewProps) {
   const deleteMutation = useDeleteAppointment();
 
   const events: CalendarEvent[] = useMemo(() => {
-    const appointments = Array.isArray(appointmentsData) ? appointmentsData : [];
-    return appointments.map((apt: any) => {
+    const appointments = Array.isArray(appointmentsData) ? (appointmentsData as Appointment[]) : [];
+    return appointments.map((apt: Appointment) => {
       const typeInfo = appointmentTypes.find((t) => t.value === apt.type);
       const start = new Date(apt.dateTime);
       const end = addMinutes(start, apt.duration);
@@ -317,8 +318,8 @@ export function CalendarView({ className }: CalendarViewProps) {
                       <SelectValue placeholder="Seleccionar mascota" />
                     </SelectTrigger>
                     <SelectContent>
-                      {clients?.map((client: any) =>
-                        client.pets.map((pet: any) => (
+                      {clients?.map((client: Client) =>
+                        client.pets?.map((pet) => (
                           <SelectItem key={pet.id} value={pet.id}>
                             <div className="flex items-center gap-2">
                               <Dog className="h-4 w-4" />
@@ -341,10 +342,10 @@ export function CalendarView({ className }: CalendarViewProps) {
                       <SelectValue placeholder="Seleccionar veterinario" />
                     </SelectTrigger>
                     <SelectContent>
-                      {veterinarians?.map((vet: any) => (
+                      {veterinarians?.map((vet: User) => (
                         <SelectItem key={vet.id} value={vet.id}>
                           <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
+                            <UserIcon className="h-4 w-4" />
                             Dr. {vet.firstName} {vet.lastName}
                           </div>
                         </SelectItem>
@@ -461,7 +462,7 @@ export function CalendarView({ className }: CalendarViewProps) {
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Veterinario</p>
                     <p className="font-medium flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
+                      <UserIcon className="h-4 w-4 text-muted-foreground" />
                       Dr. {selectedApt?.doctor?.firstName} {selectedApt?.doctor?.lastName}
                     </p>
                   </div>
@@ -472,7 +473,7 @@ export function CalendarView({ className }: CalendarViewProps) {
                     <p className="text-sm text-muted-foreground">Fecha y hora</p>
                     <p className="font-medium flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      {formatDateTime(selectedApt?.dateTime)}
+                      {selectedApt?.dateTime ? formatDateTime(selectedApt.dateTime) : 'No definida'}
                     </p>
                   </div>
                   <div className="space-y-1">
@@ -481,10 +482,10 @@ export function CalendarView({ className }: CalendarViewProps) {
                   </div>
                 </div>
 
-                {selectedApt?.room && (
+                {selectedApt?.roomId && (
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Sala</p>
-                    <p className="font-medium">{selectedApt?.room?.name}</p>
+                    <p className="font-medium">{selectedApt.roomId}</p>
                   </div>
                 )}
 

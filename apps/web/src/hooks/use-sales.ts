@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { salesApi } from '@/lib/api';
 import { toast } from 'sonner';
-import type { CreateSaleDto } from '@/types';
 import { AxiosError } from 'axios';
+import type { CreateSaleDto, ApiError } from '@/types';
 
 export function useSales(params?: { startDate?: string; endDate?: string }) {
   return useQuery({
@@ -37,8 +37,8 @@ export function useCreateSale() {
       queryClient.invalidateQueries({ queryKey: ['daily-summary'] });
       toast.success('Venta creada exitosamente');
     },
-    onError: (error: AxiosError) => {
-      toast.error((error?.response?.data as any)?.message || 'Error al crear la venta');
+    onError: (error: AxiosError<ApiError>) => {
+      toast.error(error.response?.data?.message || 'Error al crear la venta');
     },
   });
 }

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientsApi } from '@/lib/api';
-import { toast } from 'sonner';
+import { ErrorHandler } from '@/lib/error-handler';
 import type { Client, PaginatedResponse, CreateClientDto, UpdateClientDto, PaginationParams } from '@/types';
 
 export function useClients(params?: PaginationParams) {
@@ -23,12 +23,13 @@ export function useCreateClient() {
 
   return useMutation({
     mutationFn: (data: CreateClientDto) => clientsApi.create(data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      toast.success('Cliente creado exitosamente');
+      ErrorHandler.showSuccess('Cliente creado exitosamente');
+      return response;
     },
-    onError: () => {
-      toast.error('Error al crear el cliente');
+    onError: (error) => {
+      ErrorHandler.showError(error, 'Error al crear el cliente');
     },
   });
 }
@@ -39,12 +40,13 @@ export function useUpdateClient() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateClientDto }) =>
       clientsApi.update(id, data),
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      toast.success('Cliente actualizado');
+      ErrorHandler.showSuccess('Cliente actualizado');
+      return response;
     },
-    onError: () => {
-      toast.error('Error al actualizar el cliente');
+    onError: (error) => {
+      ErrorHandler.showError(error, 'Error al actualizar el cliente');
     },
   });
 }
@@ -54,12 +56,13 @@ export function useDeleteClient() {
 
   return useMutation({
     mutationFn: (id: string) => clientsApi.delete(id),
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      toast.success('Cliente eliminado');
+      ErrorHandler.showSuccess('Cliente eliminado');
+      return response;
     },
-    onError: () => {
-      toast.error('Error al eliminar el cliente');
+    onError: (error) => {
+      ErrorHandler.showError(error, 'Error al eliminar el cliente');
     },
   });
 }
