@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/fix-local-prisma.js && pnpm --parallel -r dev",
-    "build": "node scripts/fix-local-prisma.js && pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
+    "build": "node scripts/fix-local-prisma.js && npx prisma@5.22.0 generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
     "build:prod": "pnpm exec prisma generate --schema=prisma/schema.prisma && pnpm --filter @vetclinic/api build && pnpm --filter vetclinic/web build",
     "build:render": "pnpm install && npx prisma@5.22.0 generate --schema=prisma/schema.prisma && pnpm build",
     "lint": "pnpm --parallel -r lint",
